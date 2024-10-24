@@ -19,5 +19,51 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module clockDivider();
+module clockDivider(
+    input [1:0] div_ratio,      //value we give to chose how much we want to slow the clock
+                                //00: clk will remain the same
+                                //01: clk will be divided by 2
+                                //10: clk will be divided by 4
+                                //11: clk will be divided by 8
+    input       clk,            //we use as our computers speed 60Hz 
+    input       rst_neg,        //async reset not dependant on the current clk, it will trigger if the 
+                                //boards when reset is pressed.  All values in regiseters will be reset
+    output      clk_divider     //output of our clock division below   
+);
+reg clk_d2, clk_d4, clk_d8, clk_enable;
+//Sequential Logic
+always @(posedge clk or negedge rst_neg) begin      //During positive egde of clk or reset not occuring
+    if(rst_neg == 1'b0) begin          //if reset
+        clk_d2 <= 1'b0;                // reset clk_d2 to 0
+    end else begin
+        clk_d2 <= ~clk_d2;
+    end
+end
+
+always @(posedge clk_d2 or negedge rst_neg) begin       //During positive egde of clk or reset not occuring
+    if(rst_neg == 1'b0) begin       //if reset
+        clk_d4 <= 1'b0;             // reset clk_d4 to 0
+    end else begin
+        clk_d4 <= ~clk_d4;          //clk_d4 will be set to posedge
+    end
+end
+
+always @(posedge clk_d4 or negedge rst_neg) begin       //During positive egde of clk or reset not occuring
+    if(rst_neg == 1'b0) begin       //if reset
+        clk_d8 <= 1'b0;             // reset clk_d8 to 0
+    end else begin
+        clk_d8 <= ~clk_d8;          //clk_d8 will be set to posedge
+    end
+end
+
+
+//Combinational Logic
+always @(*) begin                                     
+    case(div_ratio)
+        2'b00:  clk_enable = clk;
+        2'b01:  clk_enable = clk_d2;
+        2'b10:  clk_enable = clk_d4;
+        2'b11:  clk_enable = clk_d8;
+    endcase
+end
 endmodule
