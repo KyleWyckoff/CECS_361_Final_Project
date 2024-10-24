@@ -1,1 +1,44 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Califoria State University, Long Beach
+// Engineers: Jose Ambriz, Bronson Garel, Kyle Wyckoff
+// 
+// Create Date: 10/08/2024 12:20:41 PM
+// Design Name: 
+// Module Name: snakeControl
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module snakeControl(
+    input clk, reset, move_tick,
+    input [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
+    output reg [9:0] head_x, head_y
+);
+    parameter MAX_X = 640, MAX_Y = 480;
+    parameter STEP_SIZE = 10;  // Snake step size (in pixels)
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            head_x <= MAX_X / 2;
+            head_y <= MAX_Y / 2;
+        end else if (move_tick) begin
+            case (direction)
+                2'b00: head_y <= (head_y > 0) ? head_y - STEP_SIZE : head_y;                    // Up
+                2'b01: head_y <= (head_y < MAX_Y - STEP_SIZE) ? head_y + STEP_SIZE : head_y;    // Down
+                2'b10: head_x <= (head_x > 0) ? head_x - STEP_SIZE : head_x;                    // Left
+                2'b11: head_x <= (head_x < MAX_X - STEP_SIZE) ? head_x + STEP_SIZE : head_x;    // Right
+            endcase
+        end
+    end
+endmodule
 
