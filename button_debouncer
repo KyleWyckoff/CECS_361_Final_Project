@@ -1,0 +1,49 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Califoria State University, Long Beach
+// Engineers: Jose Ambriz, Bronson Garel, Kyle Wyckoff
+// 
+// Create Date: 10/28/2024 11:10:45 PM
+// Design Name: 
+// Module Name: button_debouncer
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module button_debouncer(
+    input clk, reset,
+    input button_in,
+    output reg button_out
+    );
+    
+    reg [19:0] counter; // 20 bit counter for debouncing timing
+    reg button_sync;
+    
+    always @ (posedge clk or posedge reset) begin
+        if (reset) begin
+            counter <= 0;
+            button_sync <= 0;
+            button_out <= 0;
+        end else begin
+            if (button_in != button_sync) begin
+                counter <= counter + 1;
+                if (counter == 20'hFFFFF) begin // Adjusted based on begin
+                    button_sync <= button_in;
+                    button_out <= button_in;
+                    counter <= 0;
+                end
+            end else
+                counter <= 0;
+        end
+    end    
+endmodule
