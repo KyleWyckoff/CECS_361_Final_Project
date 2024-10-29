@@ -20,25 +20,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module snakeControl(
-    input clk, reset, move_tick,
-    input [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
-    output reg [9:0] head_x, head_y
-);
-    parameter MAX_X = 640, MAX_Y = 480;
-    parameter STEP_SIZE = 10;  // Snake step size (in pixels)
-
+    input clk, reset,
+    input up, down, left, right, extra, // 5 button inputs
+    output reg [1:0] direction  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
+    );
+    
+    parameter UP = 2'b00, DOWN = 2'b01, LEFT = 2'b10, RIGHT = 2'b11;
+    
     always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            head_x <= MAX_X / 2;
-            head_y <= MAX_Y / 2;
-        end else if (move_tick) begin
-            case (direction)
-                2'b00: head_y <= (head_y > 0) ? head_y - STEP_SIZE : head_y;                    // Up
-                2'b01: head_y <= (head_y < MAX_Y - STEP_SIZE) ? head_y + STEP_SIZE : head_y;    // Down
-                2'b10: head_x <= (head_x > 0) ? head_x - STEP_SIZE : head_x;                    // Left
-                2'b11: head_x <= (head_x < MAX_X - STEP_SIZE) ? head_x + STEP_SIZE : head_x;    // Right
-            endcase
+        if (reset)
+            direction <= UP; // Initial direction set to UP
+        else begin
+            if (up && direction != DOWN) // Prevent moving down while going up
+                direction <= UP;
+            else if (down && direction != UP)
+                direction <= DOWN;
+            else if (left && direction != RIGHT)
+                direction <= LEFT;
+            else if (right && direction != LEFT)
+                direction <= RIGHT;
         end
     end
 endmodule
-
