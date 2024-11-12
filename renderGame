@@ -1,23 +1,30 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: Califoria State University, Long Beach
-// Engineers: Jose Ambriz, Bronson Garel, Kyle Wyckoff
-// 
-// Create Date: 10/08/2024 12:20:41 PM
-// Design Name: 
-// Module Name: renderSnake
-// Project Name: Snake Game
-// Target Devices: Nexys A7-100T
-// Tool Versions: Vivado 2024.1
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+module renderGame(
+    input [9:0] x,
+    input [9:0] y,
+    input display_enable,
+    input [9:0] snake_x,   // Current X position of the snake (head or each segment if you handle the whole snake)
+    input [9:0] snake_y,   // Current Y position of the snake
+    input [9:0] food_x,    // X position of the food
+    input [9:0] food_y,    // Y position of the food
+    output reg [7:0] rgb   // RGB color output (example: 8 bits for simple colors)
+);
 
-module renderSnake();
+    always @(*) begin
+        if (display_enable) begin
+            // Check if the current pixel is part of the snake
+            if ((x == snake_x) && (y == snake_y)) 
+                rgb = 8'b000_111_00;   // Green color for snake
+
+            // Check if the current pixel is the food
+            else if ((x == food_x) && (y == food_y)) 
+                rgb = 8'b111_000_00;   // Red color for food
+
+            // Otherwise, background color
+            else 
+                rgb = 8'b111_111_11;   // White color for background
+        end 
+        else 
+            rgb = 8'b000_000_00;       // Black if outside display area
+    end
+
 endmodule
