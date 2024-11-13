@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Califoria State University, Long Beach
-// Engineers: Jose Ambriz, Bronson Garel, Kyle Wyckoff
+// Engineer: Bronson Garel
 // 
-// Create Date: 10/28/2024 11:10:45 PM
+// Create Date: 10/28/2024 11:36:49 PM
 // Design Name: 
 // Module Name: button_debouncer
 // Project Name: Snake Game
@@ -23,27 +23,16 @@
 module button_debouncer(
     input clk, reset,
     input button_in,
-    output reg button_out
+    output button_out
     );
     
-    reg [19:0] counter; // 20 bit counter for debouncing timing
-    reg button_sync;
+    wire clk_out;
+    wire Q1, Q2;
     
-    always @ (posedge clk or posedge reset) begin
-        if (reset) begin
-            counter <= 0;
-            button_sync <= 0;
-            button_out <= 0;
-        end else begin
-            if (button_in != button_sync) begin
-                counter <= counter + 1;
-                if (counter == 20'hFFFFF) begin // Adjusted based on begin
-                    button_sync <= button_in;
-                    button_out <= button_in;
-                    counter <= 0;
-                end
-            end else
-                counter <= 0;
-        end
-    end    
+    slow_clock u1(.clk_in(clk), .clk_out(clk_out));
+    dff d1(.clk(clk_out),.D(button_in), .Q(Q1));
+    dff d2(.clk(clk_out),.D(Q1), .Q(Q2));
+    
+    assign button_out = Q1 & ~Q2;
+    
 endmodule
