@@ -21,7 +21,7 @@
 
 module snakeControl(
     input clk, reset,
-    input up, down, left, right, extra, // 5 button inputs
+    input wire up, down, left, right, // 5 button inputs
     output reg [1:0] direction  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
     );
     
@@ -30,6 +30,8 @@ module snakeControl(
     always @(posedge clk or posedge reset) begin
         if (reset)
             direction <= UP; // Initial direction set to UP
+            
+        //update current direction based on input
         else begin
             if (up && direction != DOWN) // Prevent moving down while going up
                 direction <= UP;
@@ -40,5 +42,18 @@ module snakeControl(
             else if (right && direction != LEFT)
                 direction <= RIGHT;
         end
+        
+        //increment each body segment by 1 (overlap with head)
+        
+        //update head position based on current direction
+        
+        //detect collision with wall or self
+        
+        //detect food
+            //if food
+                //clear food
+                //add length
+                //generate new random food                
     end
+    
 endmodule
