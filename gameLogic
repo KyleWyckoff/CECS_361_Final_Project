@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: Califoria State University, Long Beach
-// Engineers: Jose Ambriz, Bronson Garel, Kyle Wyckoff
+// Company: 
+// Engineer: 
 // 
-// Create Date: 10/08/2024 12:20:41 PM
+// Create Date: 11/12/2024 06:29:06 PM
 // Design Name: 
 // Module Name: gameLogic
-// Project Name: Snake Game
-// Target Devices: Nexys A7-100T
-// Tool Versions: Vivado 2024.1
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
 // Description: 
 // 
 // Dependencies: 
@@ -19,14 +19,19 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+
 module gameLogic(
     input clk, reset,
     input wire up, down, left, right, // 5 button inputs
-    output reg [1:0] direction  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
+    input [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
+    output reg [4:0] snakeLength,
+    output reg [9:0] snake_x [0:31], snake_y [0:31],
+    output reg [9:0] food_x, food_y,
+    output reg game_over
     );
     
     parameter UP = 2'b00, DOWN = 2'b01, LEFT = 2'b10, RIGHT = 2'b11;
-    
+
     always @(posedge clk or posedge reset) begin
         if (reset)
             direction <= UP; // Initial direction set to UP
@@ -51,9 +56,5 @@ module gameLogic(
         
         //detect food
             //if food
-                //clear food
-                //add length
-                //generate new random food                
-    end
-    
+    end            //clear food
 endmodule
