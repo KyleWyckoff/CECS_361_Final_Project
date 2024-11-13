@@ -21,26 +21,20 @@
 
 module top(
     input clk, reset,
-    input btn1, btn2, btn3, btn4,
-    output hsync, vsync,
-    output [7:0] rgb
+    input btn1, btn2, btn3, btn4;
     );
-    
-    wire [1:0] direction;
-    wire [9:0] x, y;
-    wire video_on;
-    wire [9:0] head_x, head_y;
-    
-    // Instantiate the button control logic
-    snake_buttons btn_ctrl(
-        .clk(clk),
-        .reset(reset),
-        .btn1(btn1),
-        .btn2(btn2),
-        .btn3(btn3),
-        .btn4(btn4),
-        .direction(direction)
-    );
-    
+    //VGA Display INIT
+
+
+    //Button debouncer INITS
+    button_debouncer db_up(.clk(clk), .reset(reset), .button_in(btn1), .button_out(up));
+    button_debouncer db_down(.clk(clk), .reset(reset), .button_in(btn2), .button_out(down));
+    button_debouncer db_left(.clk(clk), .reset(reset), .button_in(btn3), .button_out(left));
+    button_debouncer db_right(.clk(clk), .reset(reset), .button_in(btn4), .button_out(right)); 
+
+    //gameLogic INIT
+
+
+    //renderGame INIT
     
 endmodule
