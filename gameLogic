@@ -25,8 +25,8 @@ module gameLogic(
     input wire up, down, left, right, // 5 button inputs
     output reg [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
     output reg [4:0] snakeLength,
-    output reg [9:0] snake_x [31:0], snake_y [31:0], // Index 0 indicates head
-    output reg [9:0] food_x, food_y,
+    output reg [9:0] snakeX [31:0], snakeY [31:0], // Index 0 indicates head
+    output reg [9:0] foodX, foodY,
     output reg game_over // Game Over = 1
     );
     
@@ -50,32 +50,38 @@ module gameLogic(
         end
         
         //increment each body segment by 1 (overlap with head)
-        if ((food_x == snake_x[0]) & (food_y == snake_y[0])) begin
-            // Increase snake length by 1
-            snakeLength <= snakeLength + 1;
-            
-            // Clear food
+        for(x = 1; x < snakeLength - 1; x = x + 1) begin
+            snakeX[x] <= snakeX[x-1];
+            snakeY[x] <= snakeY[x-1];
+        
         end
         
-        
         //update head position based on current direction
-//        case(direction)
-//            UP:     snake_y <= snake_y + 1;
-//            DOWN:   snake_y <= snake_y - 1;
-//            LEFT:   snake_x <= snake_x - 1;
-//            RIGHT:  snake_x <= snake_x + 1;
-//        endcase
+        case(direction)
+            UP:     snakeY[0] <= snakeY[0] + 1;
+            DOWN:   snakeY[0] <= snakeY[0] - 1;
+            LEFT:   snakeX[0] <= snakeX[0] - 1;
+            RIGHT:  snakeX[0] <= snakeX[0] + 1;
+        endcase
         
         
         //detect collision with wall or self
         
         for (x = 0; x < 32; x = x + 1) begin
             for (y = 0; y < 32; y = x + 1) begin
-                if ((snake_x == x) & (snake_y == y))
+                if ((snakeX[x] == x) & (snakeY[y] == y))
                     game_over <= 1;
             end
         end
         //detect food
-            //if food
-    end            //clear food
+         if ((foodX == snakeX[0]) & (foodY == snakeY[0])) begin        //if food
+            snakeLength <= snakeLength + 1;        // Increase snake length by 1
+            // Clear food by generating a new x and y randomly
+        
+            foodX = $random % 640;
+            foodY = $random % 480;
+
+
+        end
+    end          
 endmodule
