@@ -2,21 +2,21 @@ module renderGame(
     input [9:0] x,
     input [9:0] y,
     input display_enable,
-    input [9:0] snake_x,   // Current X position of the snake (head or each segment if you handle the whole snake)
-    input [9:0] snake_y,   // Current Y position of the snake
-    input [9:0] food_x,    // X position of the food
-    input [9:0] food_y,    // Y position of the food
+    input [9:0] snakeX,   // Current X position of the snake (head or each segment if you handle the whole snake)
+    input [9:0] snakeY,   // Current Y position of the snake
+    input [9:0] foodX,    // X position of the food
+    input [9:0] foodY,    // Y position of the food
     output reg [7:0] rgb   // RGB color output (example: 8 bits for simple colors)
 );
 
     always @(*) begin
         if (display_enable) begin
             // Check if the current pixel is part of the snake
-            if ((x == snake_x) && (y == snake_y)) 
+            if ((x == snakeX) && (y == snakeY)) 
                 rgb = 8'b000_111_00;   // Green color for snake
 
             // Check if the current pixel is the food
-            else if ((x == food_x) && (y == food_y)) 
+            else if ((x == foodX) && (y == foodY)) 
                 rgb = 8'b111_000_00;   // Red color for food
 
             // Otherwise, background color
