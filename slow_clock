@@ -1,0 +1,37 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Califoria State University, Long Beach
+// Engineer: Bronson Garel
+// 
+// Create Date: 10/28/2024 11:36:49 PM
+// Design Name: 
+// Module Name: slow_clock
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module slow_clock(
+    input clk_in,   // Input clock of the Nexys A7-100T board 100MHz
+    output reg clk_out  // 4Hz Slow Clock
+    );
+    
+    reg [25:0] count = 0;   // 2^25 equals a number that is greater than 12.5 million
+    
+    always @(posedge clk_in)
+        begin
+            count <= count + 1;
+            if (count == 24_499_999) begin // Time Flag
+                count <= 0;
+                clk_out <= ~clk_out;
+            end
+        end
+endmodule
