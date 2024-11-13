@@ -23,21 +23,22 @@
 module gameLogic(
     input clk, reset,
     input wire up, down, left, right, // 5 button inputs
-    input [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
+    output reg [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
     output reg [4:0] snakeLength,
-    output reg [9:0] snake_x [0:31], snake_y [0:31],
+    output reg [9:0] snake_x [31:0], snake_y [31:0], // Index 0 indicates head
     output reg [9:0] food_x, food_y,
-    output reg game_over
+    output reg game_over // Game Over = 1
     );
     
     parameter UP = 2'b00, DOWN = 2'b01, LEFT = 2'b10, RIGHT = 2'b11;
-
+    integer x, y;
+    // MAX DISTANCE
+    
     always @(posedge clk or posedge reset) begin
-        if (reset)
-            direction <= UP; // Initial direction set to UP
-            
+        if (reset) begin
+            direction <= UP; // Initial direction set to UP  
         //update current direction based on input
-        else begin
+        end else begin
             if (up && direction != DOWN) // Prevent moving down while going up
                 direction <= UP;
             else if (down && direction != UP)
@@ -49,11 +50,31 @@ module gameLogic(
         end
         
         //increment each body segment by 1 (overlap with head)
+        if ((food_x == snake_x[0]) & (food_y == snake_y[0])) begin
+            // Increase snake length by 1
+            snakeLength <= snakeLength + 1;
+            
+            // Clear food
+        end
+        
         
         //update head position based on current direction
+//        case(direction)
+//            UP:     snake_y <= snake_y + 1;
+//            DOWN:   snake_y <= snake_y - 1;
+//            LEFT:   snake_x <= snake_x - 1;
+//            RIGHT:  snake_x <= snake_x + 1;
+//        endcase
+        
         
         //detect collision with wall or self
         
+        for (x = 0; x < 32; x = x + 1) begin
+            for (y = 0; y < 32; y = x + 1) begin
+                if ((snake_x == x) & (snake_y == y))
+                    game_over <= 1;
+            end
+        end
         //detect food
             //if food
     end            //clear food
