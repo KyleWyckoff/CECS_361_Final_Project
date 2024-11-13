@@ -27,7 +27,7 @@ module gameLogic(
     output reg [4:0] snakeLength,
     output reg [9:0] snakeX [31:0], snakeY [31:0], // Index 0 indicates head
     output reg [9:0] foodX, foodY,
-    output reg game_over // Game Over = 1
+    output reg gameOver // Game Over = 1
     );
     
     parameter UP = 2'b00, DOWN = 2'b01, LEFT = 2'b10, RIGHT = 2'b11;
@@ -64,13 +64,17 @@ module gameLogic(
             RIGHT:  snakeX[0] <= snakeX[0] + 1;
         endcase
         
+        //detect head collision with wall
+        if(snakeX[0] < 0 || snakeX[0] > 640 || snakeY[0] < 0 || snakeY[0] < 480) begin
+            gameOver <= 1;
         
-        //detect collision with wall or self
+        end
+        //detect collision with self
         
         for (x = 0; x < 32; x = x + 1) begin
             for (y = 0; y < 32; y = x + 1) begin
                 if ((snakeX[x] == x) & (snakeY[y] == y))
-                    game_over <= 1;
+                    gameOver <= 1;
             end
         end
         //detect food
