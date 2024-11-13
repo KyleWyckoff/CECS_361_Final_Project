@@ -5,7 +5,7 @@
 // 
 // Create Date: 10/08/2024 12:20:41 PM
 // Design Name: 
-// Module Name: snakeControl
+// Module Name: gameLogic
 // Project Name: Snake Game
 // Target Devices: Nexys A7-100T
 // Tool Versions: Vivado 2024.1
@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module snakeControl(
+module gameLogic(
     input clk, reset,
     input wire up, down, left, right, // 5 button inputs
     output reg [1:0] direction  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
