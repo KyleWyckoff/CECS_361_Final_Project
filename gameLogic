@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineers: Bronson Garel, Kyle Wyckoff
 // 
 // Create Date: 11/12/2024 06:29:06 PM
 // Design Name: 
@@ -25,11 +25,14 @@ module gameLogic(
     input wire up, down, left, right, // 5 button inputs
     output reg [1:0] direction,  // 2-bit input for direction (00: Up, 01: Down, 10: Left, 11: Right)
     output reg [4:0] snakeLength,
-    output reg [9:0] snakeX [31:0], snakeY [31:0], // Index 0 indicates head
     output reg [9:0] foodX, foodY,
-    output reg gameOver // Game Over = 1
+    output reg gameOver, // Game Over = 1
+    output wire [319:0] snake_x_flat,  // 32 segments * 10 bits = 320 bits
+    output wire [319:0] snake_y_flat
+
     );
-    
+    reg [9:0] snakeX [31:0], snakeY [31:0]; // Index 0 indicates head
+
     parameter UP = 2'b00, DOWN = 2'b01, LEFT = 2'b10, RIGHT = 2'b11;
     integer x, y;
     // MAX DISTANCE
@@ -87,5 +90,16 @@ module gameLogic(
 
 
         end
-    end          
-endmodule
+    end   
+    
+  
+// Assign concatenated values to the flat wires
+    assign snake_x_flat = {snakeX[0] , snakeX[1] , snakeX[2] , snakeX[3] , snakeX[4] , snakeX[5] , snakeX[6] , snakeX[7] , 
+                           snakeX[8] , snakeX[9] , snakeX[10], snakeX[11], snakeX[12], snakeX[13], snakeX[14], snakeX[15],
+                           snakeX[16], snakeX[17], snakeX[18], snakeX[19], snakeX[20], snakeX[21], snakeX[22], snakeX[23], 
+                           snakeX[24], snakeX[25], snakeX[26], snakeX[27], snakeX[28], snakeX[29], snakeX[30], snakeX[31]};
+    assign snake_y_flat = {snakeY[0] , snakeY[1] , snakeY[2] , snakeY[3] , snakeY[4] , snakeY[5] , snakeY[6] , snakeY[7] , 
+                           snakeY[8] , snakeY[9] , snakeY[10], snakeY[11], snakeY[12], snakeY[13], snakeY[14], snakeY[15],
+                           snakeY[16], snakeY[17], snakeY[18], snakeY[19], snakeY[20], snakeY[21], snakeY[22], snakeY[23], 
+                           snakeY[24], snakeY[25], snakeY[26], snakeY[27], snakeY[28], snakeY[29], snakeY[30], snakeY[31]};
+    endmodule
