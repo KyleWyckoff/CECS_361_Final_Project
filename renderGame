@@ -1,30 +1,68 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Califoria State University, Long Beach
+// Engineer: Kyle Wyckoff
+// 
+// Create Date: 10/08/2024 12:20:41 PM
+// Design Name: 
+// Module Name: renderGame
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+
 module renderGame(
     input [9:0] x,
     input [9:0] y,
-    input display_enable,
-    input [9:0] snakeX,   // Current X position of the snake (head or each segment if you handle the whole snake)
-    input [9:0] snakeY,   // Current Y position of the snake
+    input displayEnable,
+    input [319:0] snake_x_flat,   // Current X position of the snake (head or each segment if you handle the whole snake)
+    input [319:0] snake_y_flat,   // Current Y position of the snake
     input [9:0] foodX,    // X position of the food
     input [9:0] foodY,    // Y position of the food
     output reg [7:0] rgb   // RGB color output (example: 8 bits for simple colors)
 );
-
+    wire [9:0] snakeX [0:31];  // Internal 10-bit wide wires for each segment
+    wire [9:0] snakeY [0:31];
+    integer k;
+    // Unpack flattened wires into array format
+    genvar i;
+    generate
+        for (i = 0; i < 32; i = i + 1) begin
+            assign snakeX[i] = snake_x_flat[i*10 +: 10];
+            assign snakeX[i] = snake_y_flat[i*10 +: 10];
+        end
+    endgenerate
     always @(*) begin
-        if (display_enable) begin
-            // Check if the current pixel is part of the snake
-            if ((x == snakeX) && (y == snakeY)) 
-                rgb = 8'b000_111_00;   // Green color for snake
-
+        if (displayEnable) begin
+            // Check if the current pixek is a part of the snake body
+            for(k = 0; k < 32; k = k + 1) begin
+                if((x == snakeX[k]) && (y == snakeY[k])) begin
+                    rgb = 8'b000_000_11;  //blue color for body
+                end
+            end
+            // Check if the current pixel is part of the snake head
+            if ((x == snakeX[0]) && (y == snakeY[0])) 
+                rgb = 8'b000_111_00;   // Green color for snake head
+            
             // Check if the current pixel is the food
             else if ((x == foodX) && (y == foodY)) 
                 rgb = 8'b111_000_00;   // Red color for food
-
+            
             // Otherwise, background color
             else 
                 rgb = 8'b111_111_11;   // White color for background
-        end 
+            end   
         else 
             rgb = 8'b000_000_00;       // Black if outside display area
-    end
+        end
 
 endmodule
