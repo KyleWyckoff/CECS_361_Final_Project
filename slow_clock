@@ -24,12 +24,13 @@ module slow_clock(
     output reg clk_out  // 4Hz Slow Clock
     );
     
-    reg [25:0] count = 0;   // 2^25 equals a number that is greater than 12.5 million
+    initial clk_out = 0;
+    reg [25:0] count = 0;   // 2^25 equals a number that is greater than 24.5 million
     
     always @(posedge clk_in)
         begin
             count <= count + 1;
-            if (count == 24_499_999) begin // Time Flag
+            if (count == 12_499_999) begin // Time Flag
                 count <= 0;
                 clk_out <= ~clk_out;
             end
