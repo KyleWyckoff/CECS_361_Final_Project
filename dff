@@ -1,4 +1,4 @@
-  `timescale 1ns / 1ps
+`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Califoria State University, Long Beach
 // Engineer: Bronson Garel
@@ -23,13 +23,14 @@
 module dff(
     input clk,
     input D,
-    output reg Q,
-    output reg Q_bar
+    output reg Q
     );
+    
+    initial Q = 0;
     
     always @ (posedge clk)
         begin
             Q <= D;
-            Q_bar <= !D;
         end
+        
 endmodule
