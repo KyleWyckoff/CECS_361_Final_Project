@@ -1,16 +1,9 @@
 module gameLogic (
-    input wire clk,            // Clock signal
-    input wire reset,          // Reset signal
-    input wire up,             // Up button input (debounced)
-    input wire down,           // Down button input (debounced)
-    input wire left,           // Left button input (debounced)
-    input wire right,          // Right button input (debounced)
+    input wire clk, reset, up, down, left, right, 
     output reg game_over,      // Game Over signal (active high when game is over)
-    output wire [499:0] snake_x_flat, // Flattened x positions for snake body (50 segments, 10 bits each)
-    output wire [499:0] snake_y_flat, // Flattened y positions for snake body (50 segments, 10 bits each)
+    output wire [499:0] snake_x_flat, snake_y_flat, // Flattened x and y positions for snake body (50 segments, 10 bits each)
     output reg [7:0] snakeLength, // Current length of the snake (max 50)
-    output reg [9:0] foodX, // Current x position of the food 
-    output reg [9:0] foodY // Current y position of the food
+    output reg [9:0] foodX, foodY // Current x and y position of the food 
 
 );
 
@@ -30,11 +23,7 @@ module gameLogic (
     parameter RIGHT = 2'b11;
 
     // Internal game state and counters
-    reg [9:0] head_x;  // X-coordinate of the snake's head
-    reg [9:0] head_y;  // Y-coordinate of the snake's head
-    reg [9:0] new_x;   // New calculated X-coordinate of the snake's head
-    reg [9:0] new_y;   // New calculated Y-coordinate of the snake's head
-
+    reg [9:0] head_x, head_y, new_x, new_y;  // X-coordinate of the snake's head
     integer i;         // Counter for snake body iteration
 
     // Snake body positions (array for each segment)
@@ -119,7 +108,8 @@ module gameLogic (
                 snake_y[0] <= new_y;
 
                 // Grow the snake if it eats food (example, grow if head_x == food_x && head_y == food_y)
-                if (snake_x_flat[9:0] == foodX && snake_y_flat[9:0] == foodY) begin                    if (snakeLength < MAX_SNAKE_LENGTH) begin
+                if (snake_x_flat[9:0] == foodX && snake_y_flat[9:0] == foodY) begin                    
+                    if (snakeLength < MAX_SNAKE_LENGTH) begin
                         snakeLength <= snakeLength + 1;  // Increase snake length
                     end
                 end
