@@ -1,82 +1,41 @@
-//////////////////////////////////////////////////////////////////////////////////
-// Company: Califoria State University, Long Beach
-// Engineer: Kyle Wyckoff
-// 
-// Create Date: 10/08/2024 12:20:41 PM
-// Design Name: 
-// Module Name: renderGame
-// Project Name: Snake Game
-// Target Devices: Nexys A7-100T
-// Tool Versions: Vivado 2024.1
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
-
 module renderGame(
     input wire clk, reset, displayEnable,
-    input wire[9:0] x, y, foodX, foodY,
-    input wire [499:0] snake_x_flat, snake_y_flat,   // Current X position of the snake (head or each segment if you handle the whole snake)
-    output reg [11:0] rgb   // RGB color output (example: 8 bits for simple colors)
+    input wire [9:0] x, y, foodX, foodY,
+    input wire [499:0] snake_x_flat, snake_y_flat,
+    output reg [11:0] rgb
 );
     integer i;
     parameter WHITE = 12'b111111111111;
     parameter BLACK = 12'b000000000000;
     parameter GREEN = 12'b000011110000;
-    parameter SNAKE_SIZE = 10;  
+    parameter SNAKE_SIZE = 10;
+
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             rgb <= BLACK;  // Default to black on reset
         end else if (displayEnable) begin
-            rgb <= BLACK;  // Default color (black for background)
-            // Check if the current pixel is part of the snake head
-            if ((x == snake_x_flat[10:0]) && (y == snake_y_flat[10:0])) 
-                rgb = GREEN;   // Green color for snake head
-            
-            // Check each segment of the snake
-            for (i = 0; i < 50; i = i + 1) begin
-                if ((x >= snake_x_flat[i*10 +: 10]) && (x < snake_x_flat[i*10 +: 10] + SNAKE_SIZE) &&
-                    (y >= snake_y_flat[i*10 +: 10]) && (y < snake_y_flat[i*10 +: 10] + SNAKE_SIZE)) begin
-                    // If the pixel is within the bounds of a snake body segment, color it white
-                    rgb <= WHITE;
+            rgb <= BLACK;  // Default background color
+
+            // Snake head
+            if ((x >= snake_x_flat[10:0]) && (x < snake_x_flat[10:0] + SNAKE_SIZE) &&
+                (y >= snake_y_flat[10:0]) && (y < snake_y_flat[10:0] + SNAKE_SIZE)) 
+                rgb <= GREEN;
+
+            // Food
+            else if ((x >= foodX) && (x < foodX + SNAKE_SIZE) &&
+                     (y >= foodY) && (y < foodY + SNAKE_SIZE)) 
+                rgb <= GREEN;
+
+            // Snake body
+            else begin
+                for (i = 0; i < 50; i = i + 1) begin
+                    if ((x >= snake_x_flat[i*10 +: 10]) && (x < snake_x_flat[i*10 +: 10] + SNAKE_SIZE) &&
+                        (y >= snake_y_flat[i*10 +: 10]) && (y < snake_y_flat[i*10 +: 10] + SNAKE_SIZE)) 
+                        rgb <= WHITE;
                 end
             end
+        end else begin
+            rgb <= BLACK;
         end
     end
 endmodule
-/*    
-    
-    always @() begin
-        if (displayEnable) begin
-            // Check if the current pixek is a part of the snake body
-            for(k = 0; k < 32; k = k + 1) begin
-                if((x == snakeX[k]) && (y == snakeY[k])) begin
-                    rgb = 12'b0000_0000_1111;
-                end
-            end
-            // Check if the current pixel is part of the snake head
-            if ((x == snakeX[0]) && (y == snakeY[0])) 
-                rgb = 12'b0000_1111_0000;   // Green color for snake head
-            
-            // Check if the current pixel is the food
-            else if ((x == foodX) && (y == foodY)) 
-                rgb = 12'b1111_0000_0000;   // Red color for food
-            
-            // Otherwise, background color
-            else 
-                rgb = 12'b1111_1111_1111;   // White color for background
-            end   
-        else 
-            rgb = 12'b0000_0000_0000;       // Black if outside display area
-        end
-
-endmodule
-
-*/
