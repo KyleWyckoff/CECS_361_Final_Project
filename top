@@ -37,20 +37,27 @@ module top(
     wire [499:0] snake_x_flat;  // 50 segments * 10 bits = 500 bits
     wire [499:0] snake_y_flat;
     wire hsyncWire, vsyncWire;
-    wire gameClock;
-    clockDivider clkDiv( .clk(clk), .rst_neg(reset), .clk_divider(gameClock) );
-    //VGA Display INIT
-    VGA_Display yung( .clk(gameClock), .reset(reset), .hsync(hsyncWire), .vsync(vsyncWire), .x(x), .y(y), .valid(videoOn));
+    wire clk_25MHz, clk_gameLogic;
+    
+    
+    
+    slow_clock #(4) clk_div_vga(.clk_in(clk), .clk_out(clk_25MHz));  // 100MHz / 4 = 25MHz
+
+    // Clock divider for game logic (adjust divider ratio to get ~10 Hz)
+    slow_clock #(2500000) clk_div_game(.clk_in(clk_25MHz), .clk_out(clk_gameLogic)); // 25MHz / 2,500,000 = 10Hz    //VGA Display INIT
 
     //Button debouncer INITS
     button_debouncer shek(.clk(clk), .reset(reset), .button_in(btn1), .button_out(up));
     button_debouncer wst(.clk(clk), .reset(reset), .button_in(btn2), .button_out(down));
     button_debouncer gettin(.clk(clk), .reset(reset), .button_in(btn3), .button_out(left));
     button_debouncer rly(.clk(clk), .reset(reset), .button_in(btn4), .button_out(right)); 
-
+    
+    
+    
+    VGA_Display display( .clk(clk_25MHz), .reset(reset), .hsync(hsyncWire), .vsync(vsyncWire), .videoOn(videoOn), .x(x), .y(y));
     //gameLogic INIT            
     gameLogic Game(
-    .clk(gameClock),            // Clock signal
+    .clk(clk_gameLogic),            // Clock signal
     .reset(reset),          // Reset signal
     .up(up),             // Up button input (debounced)
     .down(down),           // Down button input (debounced)
@@ -68,7 +75,7 @@ module top(
 
 
     //renderGame INIT
-    renderGame rich( .clk(gameClock), .reset(reset), .x(x), .y(y), .displayEnable(videoOn), .snake_x_flat(snake_x_flat), 
+    renderGame rich( .clk(clk_gameLogic), .reset(reset), .x(x), .y(y), .displayEnable(videoOn), .snake_x_flat(snake_x_flat), 
                      .snake_y_flat(snake_y_flat), .foodX(foodX), .foodY(foodY), .rgb(pixelRGB));
                      
     assign rgb = pixelRGB;
