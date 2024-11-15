@@ -21,48 +21,62 @@
 
 
 module renderGame(
-    input [9:0] x,
-    input [9:0] y,
-    input displayEnable,
-    input [319:0] snake_x_flat,   // Current X position of the snake (head or each segment if you handle the whole snake)
-    input [319:0] snake_y_flat,   // Current Y position of the snake
-    input [9:0] foodX,    // X position of the food
-    input [9:0] foodY,    // Y position of the food
-    output reg [7:0] rgb   // RGB color output (example: 8 bits for simple colors)
+    input wire clk, reset, displayEnable,
+    input wire[9:0] x, y, foodX, foodY,
+    input wire [499:0] snake_x_flat, snake_y_flat,   // Current X position of the snake (head or each segment if you handle the whole snake)
+    output reg [11:0] rgb   // RGB color output (example: 8 bits for simple colors)
 );
-    wire [9:0] snakeX [0:31];  // Internal 10-bit wide wires for each segment
-    wire [9:0] snakeY [0:31];
-    integer k;
-    // Unpack flattened wires into array format
-    genvar i;
-    generate
-        for (i = 0; i < 32; i = i + 1) begin
-            assign snakeX[i] = snake_x_flat[i*10 +: 10];
-            assign snakeX[i] = snake_y_flat[i*10 +: 10];
+    integer i;
+    parameter WHITE = 12'b111111111111;
+    parameter BLACK = 12'b000000000000;
+    parameter GREEN = 12'b000011110000;
+    parameter SNAKE_SIZE = 10;  
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            rgb <= BLACK;  // Default to black on reset
+        end else if (displayEnable) begin
+            rgb <= BLACK;  // Default color (black for background)
+            // Check if the current pixel is part of the snake head
+            if ((x == snake_x_flat[10:0]) && (y == snake_y_flat[10:0])) 
+                rgb = GREEN;   // Green color for snake head
+            
+            // Check each segment of the snake
+            for (i = 0; i < 50; i = i + 1) begin
+                if ((x >= snake_x_flat[i*10 +: 10]) && (x < snake_x_flat[i*10 +: 10] + SNAKE_SIZE) &&
+                    (y >= snake_y_flat[i*10 +: 10]) && (y < snake_y_flat[i*10 +: 10] + SNAKE_SIZE)) begin
+                    // If the pixel is within the bounds of a snake body segment, color it white
+                    rgb <= WHITE;
+                end
+            end
         end
-    endgenerate
-    always @(*) begin
+    end
+endmodule
+/*    
+    
+    always @() begin
         if (displayEnable) begin
             // Check if the current pixek is a part of the snake body
             for(k = 0; k < 32; k = k + 1) begin
                 if((x == snakeX[k]) && (y == snakeY[k])) begin
-                    rgb = 8'b000_000_11;  //blue color for body
+                    rgb = 12'b0000_0000_1111;
                 end
             end
             // Check if the current pixel is part of the snake head
             if ((x == snakeX[0]) && (y == snakeY[0])) 
-                rgb = 8'b000_111_00;   // Green color for snake head
+                rgb = 12'b0000_1111_0000;   // Green color for snake head
             
             // Check if the current pixel is the food
             else if ((x == foodX) && (y == foodY)) 
-                rgb = 8'b111_000_00;   // Red color for food
+                rgb = 12'b1111_0000_0000;   // Red color for food
             
             // Otherwise, background color
             else 
-                rgb = 8'b111_111_11;   // White color for background
+                rgb = 12'b1111_1111_1111;   // White color for background
             end   
         else 
-            rgb = 8'b000_000_00;       // Black if outside display area
+            rgb = 12'b0000_0000_0000;       // Black if outside display area
         end
 
 endmodule
+
+*/
