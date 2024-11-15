@@ -21,13 +21,9 @@
 
 
 module VGA_Display(
-    input wire clk,
-    input wire reset,
-    output wire hsync,    //Horizontal sync pulse
-    output wire vsync,    //Vertical sync pulse
-    output wire valid,     //determines if the current spot is a valid position
-    output reg [9:0] x,  //x-cord range = 0-639, 10 bits will cover this range
-    output reg [9:0] y  //y-cord range = 0-479, 10 bits will cover this range
+    input wire clk, reset,
+    output wire hsync, vsync, videoOn,
+    output reg [9:0] x, y  //x-cord range = 0-639, 10 bits will cover this range
 );
     //Timing parameters for 640x480 at 60Hz clk signal
     //horizontal synchronization signal parameters
@@ -39,10 +35,10 @@ module VGA_Display(
  
     //vertical synchronization signal parameters
     parameter ACTIVE_VIDEO_WIDTH = 480;   //# of vertical pixels
-    parameter vsync_fp     = 11;    //blanking period before sync pulse
+    parameter vsync_fp     = 10;    //blanking period before sync pulse
     parameter VSYNC_PULSE_WIDTH  = 2;     //captures input from the FPGA
-    parameter vsync_bp     = 31;    //blanking period after sync pulse
-    parameter VSYNC_TOTAL  = 524;
+    parameter vsync_bp     = 33;    //blanking period after sync pulse
+    parameter VSYNC_TOTAL  = 526;
 
     reg [9:0] h_count, v_count;
     
@@ -86,49 +82,3 @@ module VGA_Display(
     end
 
 endmodule
-    
-    
-    
-    
-    
-    
-    
-    /*
-    
-    
-    
-    
-    always @(posedge clk) begin
-    
-        // Horizontal sync signal generation
-        if (x_count < hsync_pulse) 
-            hsync <= 0; // Active low during sync pulse
-        else 
-            hsync <= 1; // High during active area
-
-        // Increment horizontal count
-        if (x_count < hsync_pulse + hsync_bp + hsync_active + hsync_fp)
-            x_count <= x_count + 1; // Increment until end of total line
-        else begin
-            x_count <= 0; // Reset horizontal count after one line
-            // Increment vertical count at the end of each horizontal line
-            if (y_count < vsync_pulse + vsync_bp + vsync_active + vsync_fp)
-                y_count <= y_count + 1; // Increment until the end of total frames
-            else 
-                y_count <= 0; // Reset vertical count after one frame
-        end
-
-        // Determine if the current pixel is in the valid area
-        valid <= (x_count >= hsync_pulse + hsync_bp)                &&  //x_count >= 96 + 48       checks left bound
-                 (x_count < hsync_pulse + hsync_bp + hsync_active)  &&  //x_count <  96 + 48 + 640 checks right bound
-                 (y_count >= vsync_pulse + vsync_bp)                &&  //y_count >= 2 + 31        checks upper bound
-                 (y_count < vsync_pulse + vsync_bp + vsync_active);     //y_ocunt < 2 + 31 + 480   checks lower bound
-
-        // Assign pixel coordinates only when in the valid area
-        if (valid) begin
-            x <= x_count - (hsync_pulse + hsync_bp); // Calculate x-coordinate
-            y <= y_count - (vsync_pulse + vsync_bp); // Calculate y-coordinate
-        end
-    end
-endmodule
-   */
