@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Califoria State University, Long Beach
-// Engineers: Jose Ambriz, Bronson Garel, Kyle Wyckoff
+// Engineer: Kyle Wyckoff
 // 
 // Create Date: 10/08/2024 12:20:41 PM
 // Design Name: 
@@ -23,22 +23,24 @@
 module top(
     input clk, reset,
     input btn1, btn2, btn3, btn4,
-    output hsync, vsync, [7:0] rgb
+    output hsync, vsync, [11:0] rgb
     );
     
     wire [9:0] x, y;          // Pixel coordinates from VGA controller
     wire videoOn;            // Video signal from VGA controller
-    wire [7:0] pixelRGB;     // RGB output from pixel renderer
-    wire [4:0] snakeLength;
-    wire [9:0] snake_X [0:31], snake_Y [0:31];
+    wire [11:0] pixelRGB;     // RGB output from pixel renderer
+    wire [7:0] snakeLength = 4;
     wire [9:0] foodX, foodY;
     wire gameOver;
     wire up, down, left, right;
     wire [1:0] direction;
-    
-    
+    wire [499:0] snake_x_flat;  // 50 segments * 10 bits = 500 bits
+    wire [499:0] snake_y_flat;
+    wire hsyncWire, vsyncWire;
+    wire gameClock;
+    clockDivider clkDiv( .clk(clk), .rst_neg(reset), .clk_divider(gameClock) );
     //VGA Display INIT
-    VGA_Display yung( .clk(clk), .hsync(hsync), .vsync(vsync), .x(x), .y(y), .valid(video_on));
+    VGA_Display yung( .clk(gameClock), .reset(reset), .hsync(hsyncWire), .vsync(vsyncWire), .x(x), .y(y), .valid(videoOn));
 
     //Button debouncer INITS
     button_debouncer shek(.clk(clk), .reset(reset), .button_in(btn1), .button_out(up));
@@ -46,13 +48,30 @@ module top(
     button_debouncer gettin(.clk(clk), .reset(reset), .button_in(btn3), .button_out(left));
     button_debouncer rly(.clk(clk), .reset(reset), .button_in(btn4), .button_out(right)); 
 
-    //gameLogic INIT
-    gameLogic rlly(.clk(clk), .reset(reset), .up(up), .down(down), .left(left), 
-                   .right(right), .direction(direction), .foodX(foodX), .foodY(foodY), 
-                   .snakeLength(snakeLength), .gameOver(gameOver));
-    
+    //gameLogic INIT            
+    gameLogic Game(
+    .clk(gameClock),            // Clock signal
+    .reset(reset),          // Reset signal
+    .up(up),             // Up button input (debounced)
+    .down(down),           // Down button input (debounced)
+    .left(left),           // Left button input (debounced)
+    .right(right),          // Right button input (debounced)
+    .game_over(gameOver),      // Game Over signal (active high when game is over)
+    .snake_x_flat(snake_x_flat), // Flattened x positions for snake body (50 segments, 10 bits each)
+    .snake_y_flat(snake_y_flat), // Flattened y positions for snake body (50 segments, 10 bits each)
+    .snakeLength(snakeLength), // Current length of the snake (max 50)
+    .foodX(foodX), // Current x position of the food 
+    .foodY(foodY) // Current y position of the food
+
+);
+  
+
 
     //renderGame INIT
-    renderGame rich( .x(x), .y(y), .display_enable(videoOn), .snakeX(snakeX), 
-                     .snakeY(snakeY), .foodX(foodX), .foodY(foodY), .rgb(pixelRGB));
+    renderGame rich( .clk(gameClock), .reset(reset), .x(x), .y(y), .displayEnable(videoOn), .snake_x_flat(snake_x_flat), 
+                     .snake_y_flat(snake_y_flat), .foodX(foodX), .foodY(foodY), .rgb(pixelRGB));
+                     
+    assign rgb = pixelRGB;
+    assign hsync = hsyncWire;
+    assign vsync = vsyncWire;
 endmodule
