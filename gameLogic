@@ -49,7 +49,13 @@ module gameLogic (
             assign snake_y_flat[10*j +: 10] = snake_y[j];  // Assign 10 bits per segment to the flattened wire
         end
     endgenerate
-
+    
+    
+     // Initial food position - You can set a fixed initial position or make it random.
+    initial begin
+        foodX = 10'd200;  // Example initial X position
+        foodY = 10'd150;  // Example initial Y position
+    end
     // Game logic: Update snake movement and collision detection
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -59,6 +65,8 @@ module gameLogic (
             snakeLength <= 1;  // Snake starts with length 1
             game_over <= 0;    // Game is not over initially
             current_direction <= RIGHT; // Snake starts moving to the right
+            foodX <= 10'd200;  // Reset to initial position
+            foodY <= 10'd150;
         end else begin
             // Handle direction change based on button presses
             if (up && current_direction != DOWN) begin
@@ -101,7 +109,7 @@ module gameLogic (
                 game_over <= 1;  // Set game over if snake hits the wall
             end else begin
                 // Move the snake: Shift all body segments to the next position
-                for (i = snakeLength-1; i > 0; i = i - 1) begin
+                for (i = 10; i > 0; i = i - 1) begin
                     snake_x[i] <= snake_x[i-1];  // Shift the body positions
                     snake_y[i] <= snake_y[i-1];
                 end
@@ -111,8 +119,7 @@ module gameLogic (
                 snake_y[0] <= new_y;
 
                 // Grow the snake if it eats food (example, grow if head_x == food_x && head_y == food_y)
-                if (foodX == snake_x[0] && foodY == snake_y[0]) begin
-                    if (snakeLength < MAX_SNAKE_LENGTH) begin
+                if (snake_x_flat[9:0] == foodX && snake_y_flat[9:0] == foodY) begin                    if (snakeLength < MAX_SNAKE_LENGTH) begin
                         snakeLength <= snakeLength + 1;  // Increase snake length
                     end
                 end
