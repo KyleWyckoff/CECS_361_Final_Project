@@ -5,7 +5,7 @@
 // 
 // Create Date: 11/11/2024 11:22:39 AM
 // Design Name: 
-// Module Name: snakeControl_tb
+// Module Name: gameLogic_tb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module snakeControl_tb();
+module gameLogic_tb();
 
 reg clk, reset;
 reg up, down, left, right;

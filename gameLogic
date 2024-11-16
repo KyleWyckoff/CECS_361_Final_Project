@@ -1,0 +1,124 @@
+module gameLogic (
+    input wire clk, reset, up, down, left, right, 
+    output reg game_over,      // Game Over signal (active high when game is over)
+    output wire [499:0] snake_x_flat, snake_y_flat, // Flattened x and y positions for snake body (50 segments, 10 bits each)
+    output reg [7:0] snakeLength, // Current length of the snake (max 50)
+    output reg [9:0] foodX, foodY // Current x and y position of the food 
+
+);
+
+    // Parameters for the game
+    parameter SCREEN_WIDTH = 640;    // VGA screen width (pixels)
+    parameter SCREEN_HEIGHT = 480;   // VGA screen height (pixels)
+    parameter MAX_SNAKE_LENGTH = 50; // Maximum length of the snake
+
+    // Directional states
+    reg [1:0] current_direction;    // 2-bit value to represent the snake's current direction
+    reg [1:0] next_direction;       // 2-bit value to represent the snake's next direction
+
+    // States for direction (encoded as 2-bit)
+    parameter UP = 2'b00;
+    parameter DOWN = 2'b01;
+    parameter LEFT = 2'b10;
+    parameter RIGHT = 2'b11;
+
+    // Internal game state and counters
+    reg [9:0] head_x, head_y, new_x, new_y;  // X-coordinate of the snake's head
+    integer i;         // Counter for snake body iteration
+
+    // Snake body positions (array for each segment)
+    reg [9:0] snake_x [49:0];  // X positions for snake body (50 segments)
+    reg [9:0] snake_y [49:0];  // Y positions for snake body (50 segments)
+
+    // Generate block to flatten the snake_x and snake_y arrays
+    genvar j;
+    generate
+        for (j = 0; j < MAX_SNAKE_LENGTH; j = j + 1) begin : flatten_snake
+            assign snake_x_flat[10*j +: 10] = snake_x[j];  // Assign 10 bits per segment to the flattened wire
+            assign snake_y_flat[10*j +: 10] = snake_y[j];  // Assign 10 bits per segment to the flattened wire
+        end
+    endgenerate
+    
+    
+     // Initial food position - You can set a fixed initial position or make it random.
+    initial begin
+        foodX = 10'd200;  // Example initial X position
+        foodY = 10'd150;  // Example initial Y position
+    end
+    // Game logic: Update snake movement and collision detection
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            // Reset the game state and snake
+            head_x <= SCREEN_WIDTH / 2;  // Start at the middle of the screen
+            head_y <= SCREEN_HEIGHT / 2;
+            snakeLength <= 1;  // Snake starts with length 1
+            game_over <= 0;    // Game is not over initially
+            current_direction <= RIGHT; // Snake starts moving to the right
+            foodX <= 10'd200;  // Reset to initial position
+            foodY <= 10'd150;
+        end else begin
+            // Handle direction change based on button presses
+            if (up && current_direction != DOWN) begin
+                next_direction <= UP;  // Change direction to UP if not moving down
+            end else if (down && current_direction != UP) begin
+                next_direction <= DOWN;  // Change direction to DOWN if not moving up
+            end else if (left && current_direction != RIGHT) begin
+                next_direction <= LEFT;  // Change direction to LEFT if not moving right
+            end else if (right && current_direction != LEFT) begin
+                next_direction <= RIGHT;  // Change direction to RIGHT if not moving left
+            end else begin
+                next_direction <= current_direction;  // Keep the same direction if no button is pressed
+            end
+
+            // Update current direction
+            current_direction <= next_direction;
+
+            // Update the position of the snake's head based on the current direction
+            case (current_direction)
+                UP: begin
+                    new_x <= head_x;
+                    new_y <= head_y - 1;  // Move up (decrease y)
+                end
+                DOWN: begin
+                    new_x <= head_x;
+                    new_y <= head_y + 1;  // Move down (increase y)
+                end
+                LEFT: begin
+                    new_x <= head_x - 1;  // Move left (decrease x)
+                    new_y <= head_y;
+                end
+                RIGHT: begin
+                    new_x <= head_x + 1;  // Move right (increase x)
+                    new_y <= head_y;
+                end
+            endcase
+
+            // Check for collisions with walls (out of screen bounds)
+            if (new_x >= SCREEN_WIDTH || new_x < 0 || new_y >= SCREEN_HEIGHT || new_y < 0) begin
+                game_over <= 1;  // Set game over if snake hits the wall
+            end else begin
+                // Move the snake: Shift all body segments to the next position
+                for (i = 10; i > 0; i = i - 1) begin
+                    snake_x[i] <= snake_x[i-1];  // Shift the body positions
+                    snake_y[i] <= snake_y[i-1];
+                end
+
+                // Update the head of the snake
+                snake_x[0] <= new_x;
+                snake_y[0] <= new_y;
+
+                // Grow the snake if it eats food (example, grow if head_x == food_x && head_y == food_y)
+                if (snake_x_flat[9:0] == foodX && snake_y_flat[9:0] == foodY) begin                    
+                    if (snakeLength < MAX_SNAKE_LENGTH) begin
+                        snakeLength <= snakeLength + 1;  // Increase snake length
+                    end
+                end
+            end
+
+            // Update the snake's head position
+            head_x <= new_x;
+            head_y <= new_y;
+        end
+    end
+
+endmodule
