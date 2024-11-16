@@ -1,1 +1,68 @@
+`timescale 1ns / 1ps
 
+module top_tb();
+
+    // Testbench signals
+    reg clk_tb, reset_tb;
+    reg btn1_tb, btn2_tb, btn3_tb, btn4_tb;
+    wire hsync_tb, vsync_tb;
+    wire [11:0] rgb_tb;
+
+    // Instantiate the DUT (Device Under Test)
+    top UUT (
+        .clk(clk_tb),
+        .reset(reset_tb),
+        .btn1(btn1_tb),
+        .btn2(btn2_tb),
+        .btn3(btn3_tb),
+        .btn4(btn4_tb),
+        .hsync(hsync_tb),
+        .vsync(vsync_tb),
+        .rgb(rgb_tb)
+    );
+
+    // Clock generation: 100MHz clock (10ns period)
+    initial begin
+        clk_tb = 0;
+        forever #5 clk_tb = ~clk_tb;  // Toggle every 5ns
+    end
+
+    // Test sequence
+    initial begin
+        // Initialize inputs
+        reset_tb = 1;  // Assert reset
+        btn1_tb = 0;
+        btn2_tb = 0;
+        btn3_tb = 0;
+        btn4_tb = 0;
+
+        #50;  // Wait for 50ns
+        reset_tb = 0;  // De-assert reset
+
+        // Simulate button presses
+        #100; btn1_tb = 1;  // Simulate 'up' button press
+        #50;  btn1_tb = 0;
+
+        #100; btn2_tb = 1;  // Simulate 'down' button press
+        #50;  btn2_tb = 0;
+
+        #100; btn3_tb = 1;  // Simulate 'left' button press
+        #50;  btn3_tb = 0;
+
+        #100; btn4_tb = 1;  // Simulate 'right' button press
+        #50;  btn4_tb = 0;
+
+        // Run the simulation for some time
+        #500000;
+
+        // End simulation
+        $stop;
+    end
+
+    // Monitor key outputs
+    initial begin
+        $monitor("Time: %0dns | hsync: %b | vsync: %b | rgb: %h", 
+                 $time, hsync_tb, vsync_tb, rgb_tb);
+    end
+
+endmodule
