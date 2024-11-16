@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module VGA_Display_tb;
+module VGA_Display_tb();
 
     // Testbench signals
     reg clk_tb;
