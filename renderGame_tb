@@ -1,1 +1,136 @@
+`timescale 1ns / 1ps
+
+module renderGame_tb;
+
+    // Inputs
+    reg clk;
+    reg reset;
+    reg displayEnable;
+    reg [9:0] x;
+    reg [9:0] y;
+    reg [9:0] foodX;
+    reg [9:0] foodY;
+    reg [499:0] snake_x_flat;
+    reg [499:0] snake_y_flat;
+
+    // Output
+    wire [11:0] rgb;
+
+    // Internal variables for testing
+    reg [11:0] expected_rgb;
+    integer i, j;
+    integer errors = 0;
+    integer pixel_step = 1; // Set this to >1 for faster testing (e.g., test every 5th pixel)
+
+    // Clock generation
+    initial clk = 0;
+    always #5 clk = ~clk;  // 10ns clock period
+
+    // Instantiate the Unit Under Test (UUT)
+    renderGame uut (
+        .clk(clk),
+        .reset(reset),
+        .displayEnable(displayEnable),
+        .x(x),
+        .y(y),
+        .foodX(foodX),
+        .foodY(foodY),
+        .snake_x_flat(snake_x_flat),
+        .snake_y_flat(snake_y_flat),
+        .rgb(rgb)
+    );
+
+    // Task to calculate the expected RGB
+    task calculate_expected_rgb(
+        input [9:0] x,
+        input [9:0] y,
+        input [9:0] foodX,
+        input [9:0] foodY,
+        input [499:0] snake_x_flat,
+        input [499:0] snake_y_flat,
+        output reg [11:0] expected_rgb
+    );
+        integer idx;
+        reg is_snake;
+        begin
+            // Default to black
+            expected_rgb = 12'b000000000000;
+
+            // Check if the pixel matches the snake
+            is_snake = 0;
+            for (idx = 0; idx < 50; idx = idx + 1) begin
+                if ((x >= snake_x_flat[idx*10 +: 10]) && 
+                    (x < snake_x_flat[idx*10 +: 10] + 10) &&
+                    (y >= snake_y_flat[idx*10 +: 10]) && 
+                    (y < snake_y_flat[idx*10 +: 10] + 10)) begin
+                    is_snake = 1;
+                end
+            end
+            if (is_snake) begin
+                expected_rgb = 12'b000011110000; // Green for snake
+            end
+
+            // Check if the pixel matches the food
+            if ((x >= foodX) && (x < foodX + 10) &&
+                (y >= foodY) && (y < foodY + 10)) begin
+                expected_rgb = 12'b000011110000; // GREEN for food
+            end
+        end
+    endtask
+
+    // Test stimulus
+    initial begin
+        // Initialize inputs
+        reset = 1;
+        displayEnable = 0;
+        x = 0;
+        y = 0;
+        foodX = 100;
+        foodY = 150;
+        snake_x_flat = 500'd0;  // Snake initially at (0,0)
+        snake_y_flat = 500'd0;
+
+        // Apply reset
+        #20 reset = 0;
+        displayEnable = 1;
+
+        // Loop over all pixels (with step for faster testing)
+        for (i = 0; i < 640; i = i + pixel_step) begin
+            for (j = 0; j < 480; j = j + pixel_step) begin
+                x = i;
+                y = j;
+
+                // Periodically move the food and snake
+                if ((i % 50) == 0 && (j % 50) == 0) begin
+                    foodX = (i + 10) % 640;
+                    foodY = (j + 20) % 480;
+                    snake_x_flat[0 +: 10] = (i + 20) % 640;  // Snake head moves
+                    snake_y_flat[0 +: 10] = (j + 30) % 480;
+                end
+
+                // Calculate expected RGB value
+                calculate_expected_rgb(x, y, foodX, foodY, snake_x_flat, snake_y_flat, expected_rgb);
+
+                // Wait for the UUT to respond
+                #10;
+
+                // Check the output
+                if (rgb !== expected_rgb) begin
+                    errors = errors + 1;
+                    $display("Mismatch at x=%d, y=%d: expected %b, got %b", x, y, expected_rgb, rgb);
+                end
+            end
+        end
+
+        // Display final test summary
+        if (errors == 0) begin
+            $display("All tests passed successfully!");
+        end else begin
+            $display("Testing completed with %d errors.", errors);
+        end
+
+        $stop;
+    end
+
+endmodule
 
