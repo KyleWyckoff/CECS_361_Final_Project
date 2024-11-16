@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Califoria State University, Long Beach
-// Engineer: Bronson Garel
+// Engineer: Bronson Garel, Kyle Wyckoff
 // 
 // Create Date: 10/28/2024 11:36:49 PM
 // Design Name: 
@@ -19,20 +19,18 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module slow_clock(
-    input clk_in,   // Input clock of the Nexys A7-100T board 100MHz
-    output reg clk_out  // 4Hz Slow Clock
-    );
-    
-    initial clk_out = 0;
-    reg [25:0] count = 0;   // 2^25 equals a number that is greater than 24.5 million
-    
-    always @(posedge clk_in)
-        begin
+module slow_clock #(parameter DIV = 2) (
+    input wire clk_in,
+    output reg clk_out
+);
+    reg [31:0] count = 0;
+
+    always @(posedge clk_in) begin
+        if (count == DIV - 1) begin
+            clk_out <= ~clk_out;
+            count <= 0;
+        end else begin
             count <= count + 1;
-            if (count == 12_499_999) begin // Time Flag
-                count <= 0;
-                clk_out <= ~clk_out;
-            end
         end
+    end
 endmodule
