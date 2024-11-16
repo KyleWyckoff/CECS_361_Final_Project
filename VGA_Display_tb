@@ -1,1 +1,49 @@
+`timescale 1ns / 1ps
 
+module VGA_Display_tb;
+
+    // Testbench signals
+    reg clk_tb;
+    reg reset_tb;
+    wire hsync_tb;
+    wire vsync_tb;
+    wire videoOn_tb;
+    wire [9:0] x_tb;
+    wire [9:0] y_tb;
+
+    // Instantiate
+    VGA_Display UUT (
+        .clk(clk_tb),
+        .reset(reset_tb),
+        .hsync(hsync_tb),
+        .vsync(vsync_tb),
+        .videoOn(videoOn_tb),
+        .x(x_tb),
+        .y(y_tb)
+    );
+
+    // Clock generation: 25MHz clock for VGA (40ns period)
+    initial begin
+        clk_tb = 0;
+        forever #20 clk_tb = ~clk_tb;  // Toggle every 20ns
+    end
+
+    // Test sequence
+    initial begin
+        // Initialize reset
+        reset_tb = 1;
+        #100;  // Wait for 100ns
+        reset_tb = 0;  // Release reset
+
+        // Run simulation for a period to observe signals
+        #500000;  // Run for some time to observe sync and video signals
+        $stop;    // Stop simulation
+    end
+
+    // Monitor outputs
+    initial begin
+        $monitor("Time: %0d ns | hsync: %b | vsync: %b | videoOn: %b | x: %d | y: %d", 
+                 $time, hsync_tb, vsync_tb, videoOn_tb, x_tb, y_tb);
+    end
+
+endmodule
