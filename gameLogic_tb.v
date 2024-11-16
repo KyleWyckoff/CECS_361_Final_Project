@@ -19,87 +19,78 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+module gameLogic_tb;
 
-module gameLogic_tb();
+    // Testbench signals
+    reg clk_tb, reset_tb, up_tb, down_tb, left_tb, right_tb;
+    wire game_over_tb;
+    wire [499:0] snake_x_flat_tb, snake_y_flat_tb;
+    wire [7:0] snakeLength_tb;
+    wire [9:0] foodX_tb, foodY_tb;
 
-reg clk, reset;
-reg up, down, left, right;
+    // Instantiate 
+    gameLogic UUT (
+        .clk(clk_tb),
+        .reset(reset_tb),
+        .up(up_tb),
+        .down(down_tb),
+        .left(left_tb),
+        .right(right_tb),
+        .game_over(game_over_tb),
+        .snake_x_flat(snake_x_flat_tb),
+        .snake_y_flat(snake_y_flat_tb),
+        .snakeLength(snakeLength_tb),
+        .foodX(foodX_tb),
+        .foodY(foodY_tb)
+    );
 
-wire [1:0] direction;
+    // Clock generation: 50MHz clock (20ns period)
+    initial begin
+        clk_tb = 0;
+        forever #10 clk_tb = ~clk_tb;  // Toggle every 10ns
+    end
 
-snakeControl uut(
-    .clk(clk),
-    .reset(reset),
-    .up(up),
-    .down(down),
-    .left(left),
-    .right(right),
-    .direction(direction)
-);
+    // Test sequence
+    initial begin
+        // Initialize inputs
+        reset_tb = 1;  // Assert reset
+        up_tb = 0;
+        down_tb = 0;
+        left_tb = 0;
+        right_tb = 0;
 
-initial begin
-    clk = 0;
-    forever #50 clk = ~clk;
-end
+        #100;  // Wait for 100ns
+        reset_tb = 0;  // De-assert reset
 
-initial begin
-    up = 0;
-    down = 0;
-    left = 0;
-    right = 0;
-    
-    reset = 1;
-    #10 reset = 0;
-    #10;
-    $display("Initial Direction (after reset): %b", direction); // Default set to UP (00)
-    
-    // Test moving DOWN (Should not change from UP)
-    down = 1;
-    #10 down = 0;
-    #10;
-    $display("Direction after DOWN (invalid move): %b", direction); // Expect UP (00)
-    
-    // Test moving RIGHT (valid move)
-    right = 1;
-    #10 right = 0;
-    #10;
-    $display("Direction after RIGHT: %b", direction); // Expect RIGHT (11)
-    
-    // Test moving LEFT (Should not change from RIGHT)
-    left = 1;
-    #10 left = 0;
-    #10;
-    $display("Direction after LEFT (invalid move): %b", direction); // Expect RIGHT (11)
-    
-    // Test moving DOWN (valid move)
-    down = 1;
-    #10 down = 0;
-    #10;
-    $display("Direction after DOWN: %b", direction); // Expect DOWN (01)
-    
-    // Test moving UP (invalid move)
-    up = 1;
-    #10 up = 0;
-    #10;
-    $display("Direction after UP (invalid move): %b", direction); // Expect DOWN (01)
+        // Simulate right movement
+        #100;
+        right_tb = 1;
+        #100;
+        right_tb = 0;
 
-    // Test moving LEFT (valid move)
-    left = 1;
-    #10 left = 0;
-    #10;
-    $display("Direction after LEFT: %b", direction); // Expect LEFT (10)
-    
-    // Test moving RIGHT (invalid move)
-    right = 1;
-    #10 right = 0;
-    #10;
-    $display("Direction after RIGHT (invalid move): %b", direction); // Expect LEFT (10)
-    
-    // Apply Reset, Direction = UP
-    reset = 1;
-    #10 reset = 0;
-    #10;
-    $display("Direction after reset: %b", direction); // Expect UP (00)
-end
+        // Simulate upward movement
+        #100;
+        up_tb = 1;
+        #100;
+        up_tb = 0;
+
+        // Simulate food collection
+        #1000;
+        // Assuming snake moves to food position at some point
+
+        // Simulate collision with wall for game over
+        #2000;  // Let the snake move close to bounds
+        $display("Simulating collision with wall...");
+        
+        // End simulation
+        #1000;
+        $stop;
+    end
+
+    // Monitor key signals
+    initial begin
+        $monitor("Time: %0dns | game_over: %b | snakeLength: %d | foodX: %d | foodY: %d", 
+                 $time, game_over_tb, snakeLength_tb, foodX_tb, foodY_tb);
+    end
 
 endmodule
