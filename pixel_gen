@@ -1,0 +1,160 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11/29/2024 04:29:12 PM
+// Design Name: 
+// Module Name: pixel_gen
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module pixel_gen(
+    input clk,
+    input reset,
+    input up,
+    input down,
+    input left,
+    input right,
+    input video_on,
+    input p_tick,
+    input [9:0] x, foodX,
+    input [9:0] y, foodY,
+    input wire [499:0] snake_x_flat, snake_y_flat,
+    output reg [11:0] rgb
+    );
+    
+    integer i;
+    
+    // RGB color values
+    parameter GREEN = 12'h0F0;
+    parameter WHITE = 12'hFFF;
+    parameter BLUE  = 12'h00F;
+    parameter BLACK = 12'h000;
+    parameter RED   = 12'hF00;
+    
+    // 60Hz refresh tick
+    wire refresh_tick;
+    assign refresh_tick = ((y == 481) & (x == 0)) ? 1:0; // Start of vsync
+    
+    // minimum x, y values in display area
+    parameter X_MAX = 639;
+    parameter Y_MAX = 479;
+    
+    // SNAKE
+    parameter SNAKE_SIZE = 10;
+    parameter X_START = 240;
+    parameter Y_START = 320;
+    
+    // Arena Boundaries
+    parameter X_LEFT = 32;
+    parameter X_RIGHT = 608;
+    parameter Y_TOP = 68;
+    parameter Y_BOTTOM = 452;
+    
+    // Snake Boundary Signals
+    wire [9:0] x_snake_l, x_snake_r;
+    wire [9:0] y_snake_t, y_snake_b;
+    
+    reg  [9:0] x_snake_reg = X_START;
+    reg  [9:0] y_snake_reg = Y_START;
+    
+    reg  [9:0] y_snake_next, x_snake_next;
+    parameter SNAKE_SPEED = 4;
+    
+    // Register Control
+    always @(posedge clk or posedge reset)
+        if (reset) begin
+            x_snake_reg <= X_START;
+            y_snake_reg <= Y_START;
+        end
+        else begin
+            x_snake_reg <= x_snake_next;
+            y_snake_reg <= y_snake_next;
+        end
+    
+    
+    // -------------------------------------------------------------------------------------------
+    //                               Boundary Signals
+    // -------------------------------------------------------------------------------------------
+        assign top_black_on     = ((x >= 80) && (x < 560) && (y >= 80) && (y <= 84));
+        assign bottom_black_on  = ((x >= 80) && (x < 560) && (y >= 396) && (y <= 400));
+        assign left_black_on    = ((x >= 80) && (x < 85) && (y >= 80) && (y < 400));
+        assign right_black_on   = ((x >= 556) && (x < 560) && (y >= 80) && (y < 400));
+        assign snake = ((x >= snake_x_flat[10:0]) && (x < snake_x_flat[10:0] + SNAKE_SIZE) &&
+            (y >= snake_y_flat[10:0]) && (y < snake_y_flat[10:0] + SNAKE_SIZE)); 
+    // -------------------------------------------------------------------------------------------
+    
+    reg snake_on;
+    reg snake_head_on;
+    
+//    always@ (p_tick) begin
+//        for (i = 0; i < 50; i = i + 1) begin
+//            snake_on <= ((x >= snake_x_flat[i*10 +: 10]) && (x < snake_x_flat[i*10 +: 10] + SNAKE_SIZE) &&
+//                (y >= snake_y_flat[i*10 +: 10]) && (y < snake_y_flat[i*10 +: 10] + SNAKE_SIZE));
+//        end
+    
+//        // Ensure the snake head takes precedence
+//            snake_head_on <= ((x >= snake_x_flat[10:0]) && (x < snake_x_flat[10:0] + SNAKE_SIZE) &&
+//            (y >= snake_y_flat[10:0]) && (y < snake_y_flat[10:0] + SNAKE_SIZE)); // Snake head color
+//    end
+    
+    // Main rendering logic
+    always @*
+        if (~video_on)
+            rgb <= BLACK;  // Clear the screen on reset
+        else begin            
+            
+//            if ((x >= foodX) && (x < foodX + SNAKE_SIZE) &&
+//                (y >= foodY) && (y < foodY + SNAKE_SIZE)) 
+//                rgb <= GREEN;
+                
+     
+            if (top_black_on)
+                rgb <= BLACK;
+//            else if (snake_on)
+//                rgb <= GREEN;
+            else if (snake)
+                rgb <= RED;
+            else if (bottom_black_on)
+                rgb <= BLACK;
+            else if (left_black_on)
+                rgb <= BLACK;
+            else if (right_black_on)
+                rgb <= BLACK;
+            else
+                rgb = WHITE;
+        end
+
+    // ------------------------------------------------------------------------------
+    //                               LOAD RGB VALUES
+    // ------------------------------------------------------------------------------
+//    always @*
+//        if(~video_on)
+//            rgb = BLACK;
+//        else
+//            //if curr pixel is snake or food
+            
+//            if (top_black_on)
+//                rgb <= BLACK;
+//            else if (bottom_black_on)
+//                rgb <= BLACK;
+//            else if (left_black_on)
+//                rgb <= BLACK;
+                
+//            else
+//                rgb = WHITE;
+     // ------------------------------------------------------------------------------   
+     
+endmodule
