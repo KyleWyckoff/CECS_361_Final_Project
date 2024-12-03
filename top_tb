@@ -1,78 +1,68 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 11/29/2024 04:20:55 PM
-// Design Name: 
-// Module Name: top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
+module top_tb();
 
-module top(
-    input  clk,          // 100MHz
-    input  reset,
-    input  up,
-    input  down,
-    input  left,
-    input  right,
-    output hsync,
-    output vsync,
-    output [11:0] rgb
+    // Testbench signals
+    reg clk_tb, reset_tb;
+    reg btn1_tb, btn2_tb, btn3_tb, btn4_tb;
+    wire hsync_tb, vsync_tb;
+    wire [11:0] rgb_tb;
+
+    // Instantiate the DUT (Device Under Test)
+    top UUT (
+        .clk(clk_tb),
+        .reset(reset_tb),
+        .btn1(btn1_tb),
+        .btn2(btn2_tb),
+        .btn3(btn3_tb),
+        .btn4(btn4_tb),
+        .hsync(hsync_tb),
+        .vsync(vsync_tb),
+        .rgb(rgb_tb)
     );
-    
-    //wire w_reset, w_up, w_down, w_left, w_right;
-    wire w_video_on, w_p_tick, w_game_over;
-    wire w_snake_x_flat, w_snake_y_flat, w_snakeLength;
-    wire [9:0] w_x, w_y, w_foodX, w_foodY;
-    
-    reg  [11:0] rgb_reg;
-    wire [11:0] rgb_next;
-    
-    // ----------------------------------------------------------------------------------------- //
-    //                                         Modules                                           //
-    // ----------------------------------------------------------------------------------------- //
-        VGA_controller vga_c(.clk_100MHz(clk), .reset(reset), .hsync(hsync), .vsync(vsync),
-                             .video_on(w_video_on), .p_tick(w_p_tick), .x(w_x), .y(w_y));
-        
-//      button_debouncer dReset (.clk(clk), .btn_in(reset), .btn_out(w_reset));
-//      button_debouncer dUp    (.clk(clk), .btn_in(up),    .btn_out(w_up));
-//      button_debouncer dDown  (.clk(clk), .btn_in(down),  .btn_out(w_down));
-//      button_debouncer dLeft  (.clk(clk), .btn_in(left),  .btn_out(w_left));
-//      button_debouncer dRight (.clk(clk), .btn_in(right), .btn_out(w_right));
-                             
-        pixel_gen pg (.clk(clk), .reset(reset), .up(up), .down(down), .left(left), 
-                  .right(right), .video_on(w_video_on), .p_tick(w_p_tick), .x(w_x), 
-                  .y(w_y), .foodX(w_foodX), .foodY(w_foodY), .snake_x_flat(w_snake_x_flat), 
-                  .snake_y_flat(w_snake_y_flat), .rgb(rgb_next));
-                  
-        gameLogic gl (.clk(clk), .reset(reset), .up(up), .down(down), .left(left),
-                      .right(right), .game_over(w_game_over), .snake_x_flat(w_snake_x_flat),
-                      .snake_y_flat(w_snake_y_flat), .snakeLength(w_snakeLength), 
-                      .foodX(w_foodX), .foodY(w_foodY));
-    // ----------------------------------------------------------------------------------------- //
 
-    
-    
-    // ----------------------------------------------------------------------------------------- //
-    //                                        RGB buffer                                         //
-    // ----------------------------------------------------------------------------------------- //
-        always @(posedge clk)
-            if(w_p_tick)
-                rgb_reg <= rgb_next;
-        
-        assign rgb = rgb_reg;
-    // ----------------------------------------------------------------------------------------- //
-    
+    // Clock generation: 100MHz clock (10ns period)
+    initial begin
+        clk_tb = 0;
+        forever #5 clk_tb = ~clk_tb;  // Toggle every 5ns
+    end
+
+    // Test sequence
+    initial begin
+        // Initialize inputs
+        reset_tb = 1;  // Assert reset
+        btn1_tb = 0;
+        btn2_tb = 0;
+        btn3_tb = 0;
+        btn4_tb = 0;
+
+        #50;  // Wait for 50ns
+        reset_tb = 0;  // De-assert reset
+
+        // Simulate button presses
+        #100; btn1_tb = 1;  // Simulate 'up' button press
+        #50;  btn1_tb = 0;
+
+        #100; btn2_tb = 1;  // Simulate 'down' button press
+        #50;  btn2_tb = 0;
+
+        #100; btn3_tb = 1;  // Simulate 'left' button press
+        #50;  btn3_tb = 0;
+
+        #100; btn4_tb = 1;  // Simulate 'right' button press
+        #50;  btn4_tb = 0;
+
+        // Run the simulation for some time
+        #500000;
+
+        // End simulation
+        $stop;
+    end
+
+    // Monitor key outputs
+    initial begin
+        $monitor("Time: %0dns | hsync: %b | vsync: %b | rgb: %h", 
+                 $time, hsync_tb, vsync_tb, rgb_tb);
+    end
+
 endmodule
