@@ -1,15 +1,14 @@
-
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: Califoria State University, Long Beach
-// Engineer: Kyle Wyckoff
+// Company: 
+// Engineer: 
 // 
-// Create Date: 10/08/2024 12:20:41 PM
+// Create Date: 11/29/2024 04:20:55 PM
 // Design Name: 
 // Module Name: top
-// Project Name: Snake Game
-// Target Devices: Nexys A7-100T
-// Tool Versions: Vivado 2024.1
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
 // Description: 
 // 
 // Dependencies: 
@@ -20,65 +19,60 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+
 module top(
-    input clk, reset,
-    input btn1, btn2, btn3, btn4,
-    output hsync, vsync, [11:0] rgb
+    input  clk,          // 100MHz
+    input  reset,
+    input  up,
+    input  down,
+    input  left,
+    input  right,
+    output hsync,
+    output vsync,
+    output [11:0] rgb
     );
     
-    wire [9:0] x, y;          // Pixel coordinates from VGA controller
-    wire videoOn;            // Video signal from VGA controller
-    wire [11:0] pixelRGB;     // RGB output from pixel renderer
-    wire [7:0] snakeLength = 4;
-    wire [9:0] foodX, foodY;
-    wire gameOver;
-    wire up, down, left, right;
-    wire [1:0] direction;
-    wire [499:0] snake_x_flat;  // 50 segments * 10 bits = 500 bits
-    wire [499:0] snake_y_flat;
-    wire hsyncWire, vsyncWire;
-    wire clk_25MHz, clk_gameLogic;
+    //wire w_reset, w_up, w_down, w_left, w_right;
+    wire w_video_on, w_p_tick, w_game_over;
+    wire w_snake_x_flat, w_snake_y_flat, w_snakeLength;
+    wire [9:0] w_x, w_y, w_foodX, w_foodY;
     
+    reg  [11:0] rgb_reg;
+    wire [11:0] rgb_next;
     
-    
-    slow_clock #(4) clk_div_vga(.clk_in(clk), .clk_out(clk_25MHz));  // 100MHz / 4 = 25MHz
+    // ----------------------------------------------------------------------------------------- //
+    //                                         Modules                                           //
+    // ----------------------------------------------------------------------------------------- //
+        VGA_controller vga_c(.clk_100MHz(clk), .reset(reset), .hsync(hsync), .vsync(vsync),
+                             .video_on(w_video_on), .p_tick(w_p_tick), .x(w_x), .y(w_y));
+        
+//      button_debouncer dReset (.clk(clk), .btn_in(reset), .btn_out(w_reset));
+//      button_debouncer dUp    (.clk(clk), .btn_in(up),    .btn_out(w_up));
+//      button_debouncer dDown  (.clk(clk), .btn_in(down),  .btn_out(w_down));
+//      button_debouncer dLeft  (.clk(clk), .btn_in(left),  .btn_out(w_left));
+//      button_debouncer dRight (.clk(clk), .btn_in(right), .btn_out(w_right));
+                             
+        pixel_gen pg (.clk(clk), .reset(reset), .up(up), .down(down), .left(left), 
+                  .right(right), .video_on(w_video_on), .p_tick(w_p_tick), .x(w_x), 
+                  .y(w_y), .foodX(w_foodX), .foodY(w_foodY), .snake_x_flat(w_snake_x_flat), 
+                  .snake_y_flat(w_snake_y_flat), .rgb(rgb_next));
+                  
+        gameLogic gl (.clk(clk), .reset(reset), .up(up), .down(down), .left(left),
+                      .right(right), .game_over(w_game_over), .snake_x_flat(w_snake_x_flat),
+                      .snake_y_flat(w_snake_y_flat), .snakeLength(w_snakeLength), 
+                      .foodX(w_foodX), .foodY(w_foodY));
+    // ----------------------------------------------------------------------------------------- //
 
-    // Clock divider for game logic (adjust divider ratio to get ~10 Hz)
-    slow_clock #(2500000) clk_div_game(.clk_in(clk_25MHz), .clk_out(clk_gameLogic)); // 25MHz / 2,500,000 = 10Hz    //VGA Display INIT
-
-    //Button debouncer INITS
-    button_debouncer shek(.clk(clk), .reset(reset), .button_in(btn1), .button_out(up));
-    button_debouncer wst(.clk(clk), .reset(reset), .button_in(btn2), .button_out(down));
-    button_debouncer gettin(.clk(clk), .reset(reset), .button_in(btn3), .button_out(left));
-    button_debouncer rly(.clk(clk), .reset(reset), .button_in(btn4), .button_out(right)); 
     
     
+    // ----------------------------------------------------------------------------------------- //
+    //                                        RGB buffer                                         //
+    // ----------------------------------------------------------------------------------------- //
+        always @(posedge clk)
+            if(w_p_tick)
+                rgb_reg <= rgb_next;
+        
+        assign rgb = rgb_reg;
+    // ----------------------------------------------------------------------------------------- //
     
-    VGA_Display display( .clk(clk_25MHz), .reset(reset), .hsync(hsyncWire), .vsync(vsyncWire), .videoOn(videoOn), .x(x), .y(y));
-    //gameLogic INIT            
-    gameLogic Game(
-    .clk(clk_gameLogic),            // Clock signal
-    .reset(reset),          // Reset signal
-    .up(up),             // Up button input (debounced)
-    .down(down),           // Down button input (debounced)
-    .left(left),           // Left button input (debounced)
-    .right(right),          // Right button input (debounced)
-    .game_over(gameOver),      // Game Over signal (active high when game is over)
-    .snake_x_flat(snake_x_flat), // Flattened x positions for snake body (50 segments, 10 bits each)
-    .snake_y_flat(snake_y_flat), // Flattened y positions for snake body (50 segments, 10 bits each)
-    .snakeLength(snakeLength), // Current length of the snake (max 50)
-    .foodX(foodX), // Current x position of the food 
-    .foodY(foodY) // Current y position of the food
-
-);
-  
-
-
-    //renderGame INIT
-    renderGame rich( .clk(clk_gameLogic), .reset(reset), .x(x), .y(y), .displayEnable(videoOn), .snake_x_flat(snake_x_flat), 
-                     .snake_y_flat(snake_y_flat), .foodX(foodX), .foodY(foodY), .rgb(pixelRGB));
-                     
-    assign rgb = pixelRGB;
-    assign hsync = hsyncWire;
-    assign vsync = vsyncWire;
 endmodule
