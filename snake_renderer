@@ -1,0 +1,43 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/05/2024 08:58:11 PM
+// Design Name: 
+// Module Name: snake_renderer
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module snake_renderer (
+    input [9:0] pixel_x,
+    input [9:0] pixel_y,
+    input [9:0] head_x,
+    input [9:0] head_y,
+    output reg pixel_on
+);
+
+    parameter SNAKE_SIZE = 10; // Size of a snake segment
+
+    always @(*) begin
+        if ((pixel_x >= head_x) && (pixel_x < head_x + SNAKE_SIZE) &&
+            (pixel_y >= head_y) && (pixel_y < head_y + SNAKE_SIZE)) begin
+            pixel_on = 1;
+        end else begin
+            pixel_on = 0;
+        end
+    end
+
+endmodule
+
