@@ -1,0 +1,50 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/05/2024 08:57:56 PM
+// Design Name: 
+// Module Name: snake_logic
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module snake_logic (
+    input clk,
+    input reset,
+    input [1:0] direction,   // 00=up, 01=right, 10=down, 11=left
+    input food_on,
+    output reg [9:0] head_x,
+    output reg [9:0] head_y
+);
+
+    parameter SCREEN_WIDTH = 640;
+    parameter SCREEN_HEIGHT = 480;
+    parameter SNAKE_STEP = 10;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            head_x <= SCREEN_WIDTH / 2;
+            head_y <= SCREEN_HEIGHT / 2;
+        end else begin
+            case (direction)
+                2'b00: head_y <= head_y - SNAKE_STEP; // Up
+                2'b01: head_x <= head_x + SNAKE_STEP; // Right
+                2'b10: head_y <= head_y + SNAKE_STEP; // Down
+                2'b11: head_x <= head_x - SNAKE_STEP; // Left
+            endcase
+        end
+    end
+
+endmodule
