@@ -1,15 +1,14 @@
-
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: Califoria State University, Long Beach
-// Engineer: Kyle Wyckoff
+// Company: 
+// Engineer: 
 // 
-// Create Date: 10/08/2024 12:20:41 PM
+// Create Date: 12/05/2024 08:56:36 PM
 // Design Name: 
 // Module Name: top
-// Project Name: Snake Game
-// Target Devices: Nexys A7-100T
-// Tool Versions: Vivado 2024.1
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
 // Description: 
 // 
 // Dependencies: 
@@ -20,65 +19,149 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+
 module top(
-    input clk, reset,
-    input btn1, btn2, btn3, btn4,
-    output hsync, vsync, [11:0] rgb
+    input clk,
+    input reset,
+    input wire up,  // User input
+    input wire down,
+    input wire left,
+    input wire right,
+    output hsync,
+    output vsync,
+    output reg game_over,
+    output reg [3:0] red, green, blue, // VGA signals
+    output [6:0] seg,
+    output [3:0] an
     );
     
-    wire [9:0] x, y;          // Pixel coordinates from VGA controller
-    wire videoOn;            // Video signal from VGA controller
-    wire [11:0] pixelRGB;     // RGB output from pixel renderer
-    wire [7:0] snakeLength = 4;
-    wire [9:0] foodX, foodY;
-    wire gameOver;
-    wire up, down, left, right;
     wire [1:0] direction;
-    wire [499:0] snake_x_flat;  // 50 segments * 10 bits = 500 bits
-    wire [499:0] snake_y_flat;
-    wire hsyncWire, vsyncWire;
-    wire clk_25MHz, clk_gameLogic;
+    wire pixel_active;
+    wire [9:0] x, y;
+    wire food_on, snake_on, collision;
+    wire food_eaten;
+    wire clk_10Hz;
+    wire [9:0] food_x, food_y;
+    wire [13:0] score;
     
-    
-    
-    slow_clock #(4) clk_div_vga(.clk_in(clk), .clk_out(clk_25MHz));  // 100MHz / 4 = 25MHz
+    slow_clock #(10000000) (
+        .clk_in(clk),
+        .clk_out(clk_10Hz)
+        );
+        
+    // VGA controller
+    vga_controller vga (
+        .clk_100MHz(clk),
+        .reset(reset),
+        .hsync(hsync),
+        .vsync(vsync),
+        .video_on(pixel_active),
+        .x(x),
+        .y(y)
+    );
 
-    // Clock divider for game logic (adjust divider ratio to get ~10 Hz)
-    slow_clock #(2500000) clk_div_game(.clk_in(clk_25MHz), .clk_out(clk_gameLogic)); // 25MHz / 2,500,000 = 10Hz    //VGA Display INIT
+    // Direction control
+    reg [1:0] current_direction;
+    wire [1:0] new_direction;
 
-    //Button debouncer INITS
-    button_debouncer shek(.clk(clk), .reset(reset), .button_in(btn1), .button_out(up));
-    button_debouncer wst(.clk(clk), .reset(reset), .button_in(btn2), .button_out(down));
-    button_debouncer gettin(.clk(clk), .reset(reset), .button_in(btn3), .button_out(left));
-    button_debouncer rly(.clk(clk), .reset(reset), .button_in(btn4), .button_out(right)); 
+    button_to_direction dir_ctrl (
+        .clk(clk),
+        .reset(reset),
+        .btn_up(up),
+        .btn_down(down),
+        .btn_left(left),
+        .btn_right(right),
+        .current_direction(current_direction),
+        .new_direction(new_direction)
+    );
     
+    // Update the direction at every clock cycle
+    always @(posedge clk or posedge reset) begin
+        if (reset) current_direction <= 2'b01; // Default direction: right
+        else current_direction <= new_direction;
+    end
     
+    // Snake logic
+    wire [9:0] head_x, head_y;
+    snake_logic snake (
+        .clk(clk_10Hz),
+        .reset(reset),
+        .direction(current_direction),
+        .food_on(food_on),
+        .head_x(head_x),
+        .head_y(head_y)
+    );
     
-    VGA_Display display( .clk(clk_25MHz), .reset(reset), .hsync(hsyncWire), .vsync(vsyncWire), .videoOn(videoOn), .x(x), .y(y));
-    //gameLogic INIT            
-    gameLogic Game(
-    .clk(clk_gameLogic),            // Clock signal
-    .reset(reset),          // Reset signal
-    .up(up),             // Up button input (debounced)
-    .down(down),           // Down button input (debounced)
-    .left(left),           // Left button input (debounced)
-    .right(right),          // Right button input (debounced)
-    .game_over(gameOver),      // Game Over signal (active high when game is over)
-    .snake_x_flat(snake_x_flat), // Flattened x positions for snake body (50 segments, 10 bits each)
-    .snake_y_flat(snake_y_flat), // Flattened y positions for snake body (50 segments, 10 bits each)
-    .snakeLength(snakeLength), // Current length of the snake (max 50)
-    .foodX(foodX), // Current x position of the food 
-    .foodY(foodY) // Current y position of the food
+    food_logic food(
+        .clk(clk_10Hz),
+        .reset(reset),
+        .head_x(head_x),
+        .head_y(head_y),
+        .food_eaten(food_eaten),
+        .score(score),
+        .food_x(food_x),
+        .food_y(food_y)
+    );
 
-);
-  
-
-
-    //renderGame INIT
-    renderGame rich( .clk(clk_gameLogic), .reset(reset), .x(x), .y(y), .displayEnable(videoOn), .snake_x_flat(snake_x_flat), 
-                     .snake_y_flat(snake_y_flat), .foodX(foodX), .foodY(foodY), .rgb(pixelRGB));
-                     
-    assign rgb = pixelRGB;
-    assign hsync = hsyncWire;
-    assign vsync = vsyncWire;
+    collision_detection collision_mod (
+         .head_x(head_x), 
+         .head_y(head_y), 
+         .collision(collision)
+    );
+    
+    // Snake renderer
+    snake_renderer snake_rend (
+        .pixel_x(x),
+        .pixel_y(y),
+        .head_x(head_x),
+        .head_y(head_y),
+        .pixel_on(snake_on)
+    );
+    
+    food_renderer food_rend (
+        .pixel_x(x),  
+        .pixel_y(y),  
+        .food_x(food_x),   
+        .food_y(food_y),   
+        .food_on(food_on)    
+    );
+    
+    score_display(
+        .clk(clk),
+        .reset(reset),
+        .score(score),
+        .seg(seg),
+        .an(an)
+    );
+    
+    always @* begin
+        if (collision) begin
+           game_over = 1; 
+        end
+    end
+     
+    always @*
+        if (~pixel_active) begin
+            red   = 4'b0000;
+            green = 4'b0000;
+            blue  = 4'b0000;// Clear the screen on reset
+        end else begin
+            if (snake_on) begin
+                red   <= 4'b0000;  
+                green <= 4'b1111;
+                blue  <= 4'b0000;
+            end
+            else if (food_on) begin
+                red   <= 4'b1111;  
+                green <= 4'b0000;
+                blue  <= 4'b0000;
+            end
+            else begin        
+                red   <= 4'b1111;  
+                green <= 4'b1111;
+                blue  <= 4'b1111;
+            end
+        end
+        
 endmodule
+
