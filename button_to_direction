@@ -1,0 +1,57 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/05/2024 09:13:19 PM
+// Design Name: 
+// Module Name: button_to_direction
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module button_to_direction (
+    input clk,
+    input reset,
+    input btn_up,
+    input btn_down,
+    input btn_left,
+    input btn_right,
+    input [1:0] current_direction, // Current direction of the snake
+    output reg [1:0] new_direction // Updated direction
+);
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            new_direction <= 2'b01; // Default direction: right
+        end else begin
+            // Prevent conflicting moves (e.g., can't move up when moving down)
+            case (current_direction)
+                2'b00: // Up
+                    if (btn_left) new_direction <= 2'b11; // Left
+                    else if (btn_right) new_direction <= 2'b01; // Right
+                2'b01: // Right
+                    if (btn_up) new_direction <= 2'b00; // Up
+                    else if (btn_down) new_direction <= 2'b10; // Down
+                2'b10: // Down
+                    if (btn_left) new_direction <= 2'b11; // Left
+                    else if (btn_right) new_direction <= 2'b01; // Right
+                2'b11: // Left
+                    if (btn_up) new_direction <= 2'b00; // Up
+                    else if (btn_down) new_direction <= 2'b10; // Down
+            endcase
+        end
+    end
+
+endmodule
+
