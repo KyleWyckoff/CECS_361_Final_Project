@@ -24,27 +24,61 @@ module snake_logic (
     input clk,
     input reset,
     input [1:0] direction,   // 00=up, 01=right, 10=down, 11=left
-    input food_on,
+    input food_eaten,
     output reg [9:0] head_x,
-    output reg [9:0] head_y
+    output reg [9:0] head_y,
+    output reg [4:0] snake_length,
+    output wire [49:0] body_x,
+    output wire [49:0] body_y
 );
 
     parameter SCREEN_WIDTH = 640;
     parameter SCREEN_HEIGHT = 480;
     parameter SNAKE_STEP = 10;
-
+    
+    reg [9:0] body_x_a [4:0];
+    reg [9:0] body_y_a [4:0];
+    
+    integer i;
+    
     always @(posedge clk or posedge reset) begin
         if (reset) begin
+            snake_length <= 3;
             head_x <= SCREEN_WIDTH / 2;
             head_y <= SCREEN_HEIGHT / 2;
+            for (i = 0; i < 5; i = i+1) begin
+                body_x_a[i] <= 0;
+                body_y_a[i] <= 0;
+            end
         end else begin
+            // Shift body positions
+            for (i = 5; i > 0; i = i-1) begin
+                body_x_a[i] <= body_x_a[i-1];
+                body_y_a[i] <= body_y_a[i-1];
+            end
+            
+            // Update head position
+            body_x_a[0] <= head_x;
+            body_y_a[0] <= head_y;
+            
             case (direction)
                 2'b00: head_y <= head_y - SNAKE_STEP; // Up
                 2'b01: head_x <= head_x + SNAKE_STEP; // Right
                 2'b10: head_y <= head_y + SNAKE_STEP; // Down
                 2'b11: head_x <= head_x - SNAKE_STEP; // Left
             endcase
+            
+            // Grow the snake
+            if (food_eaten) snake_length <= snake_length + 1;
         end
     end
-
+    
+    genvar j;
+    generate
+        for (j = 0; j < 5; j = j + 1) begin : flatten_snake
+            assign body_x[10*j +: 10] = body_x_a[j];
+            assign body_y[10*j +: 10] = body_y_a[j];
+        end
+    endgenerate
+    
 endmodule
