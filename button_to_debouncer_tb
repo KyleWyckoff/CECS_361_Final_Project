@@ -1,0 +1,159 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/08/2024 10:11:30 AM
+// Design Name: 
+// Module Name: button_to_direction_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module button_to_direction_tb();
+
+    //UUT variables used to connect button to direction
+    reg clk_tb;
+    reg reset_tb;
+    reg up_tb;
+    reg down_tb;
+    reg left_tb;
+    reg right_tb;
+    reg [1:0] current_direction_tb;
+    wire [1:0] new_direction_tb;
+    
+    
+    //Check variables used in simulation
+    reg buttonCheck, upCheck, downCheck, leftCheck, rightCheck;
+    
+    button_to_direction UUT (
+        .clk(clk_tb),
+        .reset(reset_tb),
+        .btn_up(up_tb),
+        .btn_down(down_tb),
+        .btn_left(left_tb),
+        .btn_right(right_tb),
+        .current_direction(current_direction_tb), 
+        .new_direction(new_direction_tb)
+    );
+    
+    // Clock Generation
+    initial begin
+        clk_tb = 0;
+        forever #5 clk_tb = ~clk_tb; // 100MHz clock, period = 10ns
+    end
+    
+    initial begin
+        //      Test 2A: No input during reset        //
+        
+        reset_tb = 1;  // Assert reset
+        up_tb = 0;
+        upCheck = 0;
+        down_tb = 0;
+        downCheck = 0;
+        left_tb = 0;
+        leftCheck = 0;
+        right_tb = 0;
+        rightCheck = 0;
+        current_direction_tb = 2'b01;
+        buttonCheck = (leftCheck | left_tb) | (rightCheck | right_tb) | (upCheck | up_tb) | (downCheck | down_tb);  
+        #500;  // Wait for 100ns
+        
+        
+        reset_tb = 0;  // De-assert reset
+        #500;
+
+        
+        //      Test B: Simulate right movement        //
+        //Test on
+        right_tb = 1;
+        rightCheck = 1;
+        buttonCheck = right_tb | rightCheck;
+        #100;
+        
+        //Test off
+        right_tb = 0;
+        rightCheck = 0;
+        buttonCheck = right_tb | rightCheck;
+        #100;
+        
+        //simulate reset 
+        reset_tb = 1;
+        #10;
+        reset_tb = 0;
+        #100;
+        
+        //      Test C: Simulate upward movement       //
+        
+        
+        //Test on
+        up_tb = 1;
+        upCheck = 1;
+        buttonCheck = up_tb | upCheck;
+        #100;
+        
+        //Test off
+        up_tb = 0;
+        upCheck = 0;
+        buttonCheck = up_tb | upCheck;
+        #100
+        
+        
+        //simulate reset 
+        reset_tb = 1;
+        #100;
+        reset_tb = 0;
+        #100;
+
+        
+         //      Test D: Simulate left movement        //
+        left_tb = 1;
+        leftCheck = 1;
+        buttonCheck = left_tb | leftCheck;
+        #100;
+        
+        
+        left_tb = 0;
+        leftCheck = 0;
+        buttonCheck = left_tb | leftCheck;
+        #100;
+        
+        //simulate reset 
+        reset_tb = 1;
+        #100;
+        reset_tb = 0;
+        #100;
+          
+          
+          
+         //      Test E: Simulate down movement       //
+      
+        down_tb = 1;
+        downCheck = 1;
+        buttonCheck = down_tb | downCheck;
+        #100;
+        
+        down_tb = 0;
+        downCheck = 0;
+        buttonCheck = down_tb | downCheck;
+        #100;
+        
+        //simulate reset 
+        reset_tb = 1;
+        #100;
+        reset_tb = 0;
+        #100;
+        
+        
+    end
+endmodule
