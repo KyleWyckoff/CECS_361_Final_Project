@@ -35,15 +35,18 @@ module top(
     output [3:0] an
     );
     
-    wire [1:0] direction;
-    wire pixel_active;
+    // VGA Connections
     wire [9:0] x, y;
+    wire video_on;
+    
+    // Game Connections
+    wire [1:0] direction;
     wire food_on, snake_on, collision;
     wire food_eaten;
-    wire clk_10Hz;
     wire [9:0] food_x, food_y;
     wire [13:0] score;
     
+    wire clk_10Hz;
     slow_clock #(10000000) (
         .clk_in(clk),
         .clk_out(clk_10Hz)
@@ -51,11 +54,11 @@ module top(
         
     // VGA controller
     vga_controller vga (
-        .clk_100MHz(clk),
+        .clk(clk),
         .reset(reset),
         .hsync(hsync),
         .vsync(vsync),
-        .video_on(pixel_active),
+        .video_on(video_on),
         .x(x),
         .y(y)
     );
@@ -83,13 +86,18 @@ module top(
     
     // Snake logic
     wire [9:0] head_x, head_y;
+    wire [49:0] body_x, body_y;
+    wire [4:0] snake_length;
     snake_logic snake (
         .clk(clk_10Hz),
         .reset(reset),
         .direction(current_direction),
-        .food_on(food_on),
+        .food_eaten(food_eaten),
         .head_x(head_x),
-        .head_y(head_y)
+        .head_y(head_y),
+        .snake_length(snake_length),
+        .body_x(body_x),
+        .body_y(body_y)
     );
     
     food_logic food(
@@ -105,7 +113,10 @@ module top(
 
     collision_detection collision_mod (
          .head_x(head_x), 
-         .head_y(head_y), 
+         .head_y(head_y),
+         .body_x(body_x),
+         .body_y(body_y),
+         .snake_length(snake_length),
          .collision(collision)
     );
     
@@ -115,6 +126,9 @@ module top(
         .pixel_y(y),
         .head_x(head_x),
         .head_y(head_y),
+        .body_x(body_x),
+        .body_y(body_y),
+        .snake_length(snake_length),
         .pixel_on(snake_on)
     );
     
@@ -125,15 +139,7 @@ module top(
         .food_y(food_y),   
         .food_on(food_on)    
     );
-    
-    score_display(
-        .clk(clk),
-        .reset(reset),
-        .score(score),
-        .seg(seg),
-        .an(an)
-    );
-    
+
     always @* begin
         if (collision) begin
            game_over = 1; 
@@ -141,7 +147,7 @@ module top(
     end
      
     always @*
-        if (~pixel_active) begin
+        if (~video_on) begin
             red   = 4'b0000;
             green = 4'b0000;
             blue  = 4'b0000;// Clear the screen on reset
@@ -164,4 +170,3 @@ module top(
         end
         
 endmodule
-
