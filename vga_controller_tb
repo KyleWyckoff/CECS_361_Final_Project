@@ -1,0 +1,86 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: Jose Ambriz, Kyle Wyckoff
+// 
+// Create Date: 11/15/2024 09:20:50 PM
+// Design Name: 
+// Module Name: vga_controller_tb
+// Project Name: basic_snake
+// Target Devices: Nexys A7-100T Trainer Board
+// Tool Versions: 
+// Description: This module aims to test the vga_controller design source and verify the proper signal values are being outputted to the vga
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+
+module vga_controller_tb();
+
+    // Testbench signals connecting to design source variables
+    reg clk_tb;         // Onboard clock signal
+    reg reset_tb;       // Onboard reset button
+    wire videoOn_tb;    // Output signal to tell the program when to draw the screen
+    wire hsync_tb;      // Output for the hsync signal
+    wire vsync_tb;      // Output for the vsync signal
+    wire p_tick_tb;     // Output 25 MHz clock
+    wire [9:0] x_tb;    // Output for board horizontal coordinates
+    wire [9:0] y_tb;    // Output for board vertical coordinates
+   
+
+
+
+    
+    // Instantiate UUT for the vga_controller design source
+    vga_controller UUT (
+        .clk_100MHz(clk_tb),
+        .reset(reset_tb),
+        .video_on(videoOn_tb), 
+        .hsync(hsync_tb),
+        .vsync(vsync_tb),
+        .p_tick(p_tick_tb),
+        .x(x_tb),
+        .y(y_tb)
+    );
+    // Clock Generation
+    initial begin
+        clk_tb = 0;
+        forever #5 clk_tb = ~clk_tb; // 100MHz clock, period = 10ns
+    end
+     // *** Generate 25MHz from 100MHz *********************************************************
+	reg  [1:0] r_25MHz;
+	wire w_25MHz;
+	
+	always @(posedge clk_tb or posedge reset_tb)
+		if(reset_tb)
+		  r_25MHz <= 0;
+		else
+		  r_25MHz <= r_25MHz + 1;
+	
+	assign w_25MHz = (r_25MHz == 0) ? 1 : 0; // assert tick 1/4 of the time to check against p_tick 
+    // ****************************************************************************************
+    
+   initial begin
+        // Initialize Inputs
+        reset_tb = 1;
+
+        // Apply Reset
+        #20; // Hold reset for 20ns
+        reset_tb = 0;
+
+        // Run simulation for a sufficient time to observe outputs
+        #1000000; // Run for 1ms of simulated time to observe data
+        
+                  // Run simulator for finite amount of time to observe
+                  // all pixel values
+
+        // End simulation
+        $stop;
+    end
+endmodule
