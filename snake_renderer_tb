@@ -1,0 +1,65 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/08/2024 05:08:43 PM
+// Design Name: 
+// Module Name: snake_renderer_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module snake_renderer_tb();
+
+    //UUT Variables
+    reg [9:0] pixelX_tb, pixelY_tb, headX_tb, headY_tb;
+    reg [49:0] bodyX_tb, bodyY_tb; 
+    reg [4:0] snakeLength_tb;
+    wire pixelOn_tb;
+    
+    // Snake renderer
+    snake_renderer UUT (
+        .pixel_x(pixelX_tb),
+        .pixel_y(pixelY_tb),
+        .head_x(headX_tb),
+        .head_y(headY_tb),
+        .body_x(bodyX_tb),
+        .body_y(bodyY_tb),
+        .snake_length(snakeLength_tb),
+        .pixel_on(pixelOn_tb)
+    );
+    integer i;
+
+    // Test Sequence
+    initial begin
+        // Initialize Inputs
+        pixelX_tb = 0;
+        pixelY_tb = 0;
+        headX_tb = 50;
+        headY_tb = 50;
+        bodyX_tb = {10'd70, 10'd60, 10'd50, 10'd40, 10'd30}; // Snake body segments
+        bodyY_tb = {10'd50, 10'd50, 10'd50, 10'd50, 10'd50};
+        snakeLength_tb = 5; // Snake has 5 segments
+
+        for(i = 10; i >= 0 ; i = i - 1) begin
+            // Test pixels at various locations
+            #10 pixelX_tb = 70 - i; pixelY_tb = 50 - i; // On the first segment
+            #10 pixelX_tb = 60 - i; pixelY_tb = 50 - i; // On the second segment
+            #10 pixelX_tb = 30 - i; pixelY_tb = 50 - i; // On the last segment
+            #10 pixelX_tb = 100 - i; pixelY_tb = 100 - i; // Outside the snake body
+        end
+    
+    #500; //show final case that pixelOn_tb is true for
+    end
+endmodule
