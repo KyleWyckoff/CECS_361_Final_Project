@@ -1,0 +1,127 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/08/2024 01:35:55 PM
+// Design Name: 
+// Module Name: collision_detection_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module collision_detection_tb();
+
+    //UUT variables
+    reg [9:0] headX_tb, headY_tb;
+    reg [49:0] bodyX_tb, bodyY_tb;
+    reg [4:0] snakeLength_tb;
+    wire collision_tb;
+    
+    
+    //Check variables
+    reg [9:0] headXCheck, headYCheck;
+    reg [49:0] bodyXCheck, bodyYCheck;
+    reg [4:0] snakeLengthCheck;
+    reg collisionCheck;
+    reg positionCheck;
+    
+    //UUT call
+    collision_detection UUT(
+        .head_x(headX_tb),
+        .head_y(headY_tb),
+        .body_x(bodyX_tb),
+        .body_y(bodyY_tb),
+        .snake_length(snakeLength_tb),
+        .collision(collision_tb)
+    );
+
+    parameter SCREEN_WIDTH = 640;
+    parameter SCREEN_HEIGHT = 480;
+    
+
+
+    wire [9:0] bodyX_aCheck [4:0];
+    wire [9:0] bodyY_aCheck [4:0];
+    integer i, k, l;
+    // unpack snake
+    genvar j;
+    generate
+        for (j = 0; j < 5; j = j + 1) begin
+            assign bodyX_aCheck[j] = bodyX_tb[10*j +: 10];
+            assign bodyY_aCheck[j] = bodyY_tb[10*j +: 10];
+        end
+    endgenerate
+    initial begin
+        snakeLength_tb = 2'b11;
+        snakeLengthCheck = 3;
+                      
+        //Test every pixel in top bound              
+        for(i = 1; i < 679; i = i + 1) begin
+            headX_tb = i; //inside screen bounds
+            headY_tb = SCREEN_HEIGHT + 10; //outside screen bounds
+            headYCheck = 490;
+            headXCheck = i;
+            if (headX_tb < 0 || headX_tb >= SCREEN_WIDTH || headY_tb < 0 || headY_tb >= SCREEN_HEIGHT)
+                collisionCheck = 1;
+            positionCheck = (headXCheck       &       headX_tb) 
+                          && (headYCheck       &       headY_tb)
+                          && (collisionCheck   &    collision_tb)
+                          && (snakeLengthCheck & snakeLength_tb);
+            #50;    //give some time for each test
+        end
+        
+        //Test every pixel in bottom bound
+        for(i = 1; i < 640; i = i + 1) begin
+            headX_tb = i; //inside screen bounds
+            headY_tb = 0; //outside screen bounds
+            headYCheck = 0;
+            headXCheck = i;
+            if (headX_tb < 0 || headX_tb >= SCREEN_WIDTH || headY_tb < 0 || headY_tb >= SCREEN_HEIGHT)
+                collisionCheck = 1;
+            positionCheck = (headXCheck       &       headX_tb) 
+                          && (headYCheck       &       headY_tb)
+                          && (collisionCheck   &    collision_tb)
+                          && (snakeLengthCheck & snakeLength_tb);
+            #50;    //give some time for each test
+        end
+        //Test every pixel in the left bound
+        for(i = 1; i < 479; i = i + 1) begin
+            headX_tb = SCREEN_WIDTH + 10; //outside screen bounds
+            headY_tb = i; //inside screen bounds
+            headYCheck = i;
+            headXCheck = 650;
+            if (headX_tb < 0 || headX_tb >= SCREEN_WIDTH || headY_tb < 0 || headY_tb >= SCREEN_HEIGHT)
+                collisionCheck = 1;
+            positionCheck = (headXCheck       &       headX_tb) 
+                          && (headYCheck       &       headY_tb)
+                          && (collisionCheck   &    collision_tb)
+                          && (snakeLengthCheck & snakeLength_tb);
+            #50;    //give some time for each test
+        end
+        //Test every pixel in the right bound
+        for(i = 1; i < 479; i = i + 1) begin
+            headX_tb = 0; //outside screen bounds
+            headY_tb = i; //inside screen bounds
+            headYCheck = i;
+            headXCheck = 0;
+            if (headX_tb < 0 || headX_tb >= SCREEN_WIDTH || headY_tb < 0 || headY_tb >= SCREEN_HEIGHT)
+                collisionCheck = 1;
+            positionCheck = (headXCheck       &       headX_tb) 
+                          && (headYCheck       &       headY_tb)
+                          && (collisionCheck   &    collision_tb)
+                          && (snakeLengthCheck & snakeLength_tb);
+            #50;    //give some time for each test
+        end
+    end
+endmodule
