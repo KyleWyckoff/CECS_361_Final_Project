@@ -1,0 +1,86 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/08/2024 06:41:30 PM
+// Design Name: 
+// Module Name: food_renderer_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module food_renderer_tb();
+
+    reg [9:0] pixelX_tb, pixelY_tb, foodX_tb, foodY_tb;
+    wire foodOn_tb;
+    food_renderer UUT(
+    .pixel_x(pixelX_tb),
+    .pixel_y(pixelY_tb),
+    .food_x(foodX_tb),
+    .food_y(foodY_tb),
+    .food_on(foodOn_tb)
+    );
+    reg pixelCheck; 
+    reg outCheck;
+    reg foodOn_reg;
+    integer i;
+    
+    initial begin
+    
+    //First food position test
+    foodX_tb = 50;
+    foodY_tb = 44;
+    pixelX_tb = 20;
+    pixelY_tb = 30;
+    foodOn_reg = 0;
+    //tests some random cases cases
+    for(i = 0; i < 30; i = i + 1) begin
+        #10 pixelX_tb = 40 + i; pixelY_tb = 50;
+        if(pixelX_tb == 60 && pixelY_tb == 34) foodOn_reg  = 0; //reset for future tests 
+        if((pixelX_tb >= 50)  && (pixelX_tb < 60)  && pixelY_tb == 50) pixelCheck = 1;
+        else pixelCheck = 0;
+        outCheck = pixelCheck ^ foodOn_tb;
+    end
+    
+    #100; //buffer
+    pixelCheck = 0;
+    //Second food position test
+    foodX_tb = 66;
+    foodY_tb = 34;
+    //tests some random cases cases
+    for(i = 0; i < 30; i = i + 1) begin
+        #10 pixelX_tb = 60 + i; pixelY_tb = 34;
+        if(pixelX_tb == 76 && pixelY_tb == 34) foodOn_reg  = 0; //reset for future tests
+        if((pixelX_tb >= 66)  && (pixelX_tb < 76) && pixelY_tb == 34) pixelCheck = 1;
+        else pixelCheck = 0;
+        outCheck = pixelCheck ^ foodOn_reg;
+    end    
+    #100; //buffer
+    pixelCheck = 0;
+   
+    //Third food position test
+    foodX_tb = 65;
+    foodY_tb = 45;
+    //tests some random cases cases
+    for(i = 0; i < 30; i = i + 1) begin
+        #10 pixelX_tb = 40 + i; pixelY_tb = 45; 
+        if(pixelX_tb == 75 && pixelY_tb == 45) foodOn_reg  = 0; //reset for future tests
+        if((pixelX_tb >= 65)  && (pixelX_tb < 75)  && pixelY_tb == 45) pixelCheck = 1;
+        else pixelCheck = 0;
+        outCheck = pixelCheck ^ foodOn_reg;
+    end
+    
+    #100; //buffer
+    end
+endmodule
