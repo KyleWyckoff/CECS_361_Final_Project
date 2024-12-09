@@ -1,0 +1,85 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/09/2024 02:39:57 PM
+// Design Name: 
+// Module Name: slow_clock_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module slow_clock_tb();
+    reg clk1_tb;
+    reg clk2_tb;
+    reg clk3_tb;
+    reg clk4_tb;
+    
+    wire clkOut1_tb;
+    wire clkOut2_tb;
+    wire clkOut3_tb;
+    wire clkOut4_tb;
+    
+    parameter DIV1 = 2;
+    parameter DIV2 = 4;
+    parameter DIV3 = 6;
+    parameter DIV4 = 8;
+
+    
+    //copy the call inside of the top design source
+    slow_clock #(DIV1) UUT1(
+        .clk_in(clk1_tb),
+        .clk_out(clkOut1_tb)
+    );
+    
+    slow_clock #(DIV2) UUT2(
+        .clk_in(clk2_tb),
+        .clk_out(clkOut2_tb)
+    );
+    
+    slow_clock #(DIV3) UUT3(
+        .clk_in(clk3_tb),
+        .clk_out(clkOut3_tb)
+    );
+    
+    slow_clock #(DIV4) UUT4(
+        .clk_in(clk4_tb),
+        .clk_out(clkOut4_tb)
+    );
+     // Clock Generation
+    initial begin
+        clk1_tb = 0;
+        forever #5 clk1_tb = ~clk1_tb; // 100MHz clock, period = 10ns
+    end
+    
+    initial begin
+        clk2_tb = 0;
+        forever #5 clk2_tb = ~clk2_tb; // 100MHz clock, period = 10ns
+    end
+    
+     initial begin
+        clk3_tb = 0;
+        forever #5 clk3_tb = ~clk3_tb; // 100MHz clock, period = 10ns
+    end
+    
+     initial begin
+        clk4_tb = 0;
+        forever #5 clk4_tb = ~clk4_tb; // 100MHz clock, period = 10ns
+    end
+    
+    initial begin
+        #500000;  //run for a given amount of time to observe 
+    
+    end
+endmodule
