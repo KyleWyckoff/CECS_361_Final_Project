@@ -1,68 +1,105 @@
 `timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Engineer: Kyle Wyckoff
+// 
+// Create Date: 12/05/2024 03:44:17 PM
+// Module Name: top_tb
+// Project Name: snake_game
+// Target Devices: Nexys A7-100T FPGA Board
+// Tool Versions: Vivado 2023.2
+// Description: Wrapper test bench that did not work due to the setup of slow_clock
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
 
 module top_tb();
 
-    // Testbench signals
-    reg clk_tb, reset_tb;
-    reg btn1_tb, btn2_tb, btn3_tb, btn4_tb;
-    wire hsync_tb, vsync_tb;
-    wire [11:0] rgb_tb;
+    reg clk_tb, reset_tb, up_tb, down_tb, left_tb, right_tb;
+    wire hsync, vsync, gameOver_tb;
+    wire [3:0] red_tb, green_tb, blue_tb, an_tb;
+    wire [6:0] seg_tb;
 
-    // Instantiate the DUT (Device Under Test)
-    top UUT (
+    top UUT(
         .clk(clk_tb),
         .reset(reset_tb),
-        .btn1(btn1_tb),
-        .btn2(btn2_tb),
-        .btn3(btn3_tb),
-        .btn4(btn4_tb),
+        .up(up_tb),  // User input
+        .down(down_tb),
+        .left(left_tb),
+        .right(right_tb),
         .hsync(hsync_tb),
         .vsync(vsync_tb),
-        .rgb(rgb_tb)
+        .game_over(gameOver_tb),
+        .red(red_tb), .green(green_tb), .blue(blue_tb), // VGA signals
+        .seg(seg_tb),
+        .an(an_tb)
     );
-
-    // Clock generation: 100MHz clock (10ns period)
+    
+    // Clock Generation
     initial begin
         clk_tb = 0;
-        forever #5 clk_tb = ~clk_tb;  // Toggle every 5ns
+        forever #5 clk_tb = ~clk_tb; // 100MHz clock, period = 10ns
     end
-
-    // Test sequence
+    
+    
     initial begin
-        // Initialize inputs
-        reset_tb = 1;  // Assert reset
-        btn1_tb = 0;
-        btn2_tb = 0;
-        btn3_tb = 0;
-        btn4_tb = 0;
-
-        #50;  // Wait for 50ns
-        reset_tb = 0;  // De-assert reset
-
-        // Simulate button presses
-        #100; btn1_tb = 1;  // Simulate 'up' button press
-        #50;  btn1_tb = 0;
-
-        #100; btn2_tb = 1;  // Simulate 'down' button press
-        #50;  btn2_tb = 0;
-
-        #100; btn3_tb = 1;  // Simulate 'left' button press
-        #50;  btn3_tb = 0;
-
-        #100; btn4_tb = 1;  // Simulate 'right' button press
-        #50;  btn4_tb = 0;
-
-        // Run the simulation for some time
-        #500000;
-
-        // End simulation
-        $stop;
+        //Simulate the game being reset
+        reset_tb = 1;
+        #10;     //Random amount of time the user holds a button
+        
+        
+        reset_tb = 0;
+        #990; //observe game logic after initialization
+        //First test concludes after 1000 ns
+        
+        
+        //Second test - up_tb input 
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        up_tb = 1;
+        #1000;
+        
+        //Third test - down_tb input 
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        down_tb = 1;
+        #1000;
+        //Fourth test - right_tb input 
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        right_tb = 1;
+        #1000;
+        //Fifth test - left_tb input 
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        left_tb = 1;
+        #1000;
+        //Sixth Test - up_tb  & down_tb input
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        up_tb   = 1;
+        down_tb = 1;
+        #1000;
+        //Seventh Test - up_tb  & left_tb input
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        up_tb   = 1;
+        left_tb = 1;
+        #1000;
+        //Eigth Test - up_tb  & right_tb input
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        up_tb   = 1;
+        right_tb = 1;
+        #1000;    
+        //Ninth Test - down_tb  & left_tb input
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        down_tb   = 1;
+        left_tb = 1;
+        #1000;
+        //Tenth Test - down_tb  & right_tb input
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        down_tb   = 1;
+        right_tb = 1;
+        #1000;
+        //Eleventh Test - left_tb  & right_tb input
+        reset_tb = 1; #50; reset_tb = 0; #50;
+        right_tb   = 1;
+        left_tb = 1;
+        #1000;
+       
     end
-
-    // Monitor key outputs
-    initial begin
-        $monitor("Time: %0dns | hsync: %b | vsync: %b | rgb: %h", 
-                 $time, hsync_tb, vsync_tb, rgb_tb);
-    end
-
+    
 endmodule
