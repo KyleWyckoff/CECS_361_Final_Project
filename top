@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: California State Univerity, Long Beach 
+// Engineer: Bronson Garel
 // 
-// Create Date: 12/05/2024 08:56:36 PM
+// Create Date: 12/09/2024 04:22:41 PM
 // Design Name: 
 // Module Name: top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
 // Description: 
 // 
 // Dependencies: 
@@ -31,9 +31,10 @@ module top(
     output vsync,
     output reg game_over,
     output reg [3:0] red, green, blue, // VGA signals
-    output [6:0] seg,
-    output [3:0] an
+    output wire [7:0] score
     );
+    
+    parameter MAX_SIZE = 10;
     
     // VGA Connections
     wire [9:0] x, y;
@@ -44,7 +45,6 @@ module top(
     wire food_on, snake_on, collision;
     wire food_eaten;
     wire [9:0] food_x, food_y;
-    wire [13:0] score;
     
     wire clk_10Hz;
     slow_clock #(10000000) (
@@ -80,38 +80,41 @@ module top(
     
     // Update the direction at every clock cycle
     always @(posedge clk or posedge reset) begin
-        if (reset) current_direction <= 2'b01; // Default direction: right
+        if (reset) current_direction <= 2'b01; // Default direction: rightss
         else current_direction <= new_direction;
     end
     
     // Snake logic
     wire [9:0] head_x, head_y;
-    wire [49:0] body_x, body_y;
-    wire [4:0] snake_length;
+    wire [99:0] body_x, body_y;
+    wire [6:0] snake_length;
     snake_logic snake (
         .clk(clk_10Hz),
         .reset(reset),
         .direction(current_direction),
         .food_eaten(food_eaten),
+        .game_over(game_over),
         .head_x(head_x),
         .head_y(head_y),
         .snake_length(snake_length),
         .body_x(body_x),
-        .body_y(body_y)
+        .body_y(body_y),
+        .score(score)
     );
     
     food_logic food(
         .clk(clk_10Hz),
         .reset(reset),
+        .game_over(game_over),
         .head_x(head_x),
         .head_y(head_y),
         .food_eaten(food_eaten),
-        .score(score),
         .food_x(food_x),
         .food_y(food_y)
     );
 
     collision_detection collision_mod (
+         .reset(reset),
          .head_x(head_x), 
          .head_y(head_y),
          .body_x(body_x),
@@ -122,27 +125,27 @@ module top(
     
     // Snake renderer
     snake_renderer snake_rend (
-        .pixel_x(x),
-        .pixel_y(y),
+        .x(x),
+        .y(y),
         .head_x(head_x),
         .head_y(head_y),
         .body_x(body_x),
         .body_y(body_y),
         .snake_length(snake_length),
-        .pixel_on(snake_on)
+        .snake_on(snake_on)
     );
     
     food_renderer food_rend (
-        .pixel_x(x),  
-        .pixel_y(y),  
+        .x(x),  
+        .y(y),  
         .food_x(food_x),   
         .food_y(food_y),   
         .food_on(food_on)    
     );
 
-    always @* begin
+    always @(*) begin
         if (collision) begin
-           game_over = 1; 
+           game_over <= 1; 
         end
     end
      
@@ -151,6 +154,10 @@ module top(
             red   = 4'b0000;
             green = 4'b0000;
             blue  = 4'b0000;// Clear the screen on reset
+        end else if (game_over) begin
+            red   = 4'b1111;
+            green = 4'b0000;
+            blue  = 4'b0000;
         end else begin
             if (snake_on) begin
                 red   <= 4'b0000;  
