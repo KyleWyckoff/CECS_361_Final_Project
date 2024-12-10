@@ -2,19 +2,12 @@
 ////////////////////////////////////////////////////////////////////////////////// 
 // Engineer: Kyle Wyckoff
 // 
-// Create Date: 12/08/2024 11:41:29 AM
-// Design Name: 
+// Create Date: 12/06/2024 11:41:29 AM
 // Module Name: snake_logic_tb
 // Project Name: basic_snake
 // Target Devices: Nexys A7-100T
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
+// Tool Versions: Vivado 2023.2
+// Description: Tested basic snake movement based on different direction inputs
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -27,15 +20,9 @@ module snake_logic_tb();
     reg [1:0] direction_tb;
     reg foodEaten_tb;
     wire [9:0] headX_tb, headY_tb;
-    wire [4:0] snakeLength_tb;
-    wire [49:0] bodyX_tb, bodyY_tb;
-    
-    //Check variables
-  //  reg [1:0] directionCheck;
-  //  reg [9:0] headXCheck, headYCheck;
-  //  reg [4:0] snakeLengthCheck;
- //   reg positionCheckReg;
-
+    wire [6:0] snakeLength_tb;
+    wire [499:0] bodyX_tb, bodyY_tb;
+   
     snake_logic UUT(
         .clk(clk_tb),
         .reset(reset_tb),
@@ -76,17 +63,6 @@ module snake_logic_tb();
         direction_tb = 2'b01;
         foodEaten_tb = 0;
  
-  //      headXCheck <= SCREEN_WIDTH / 2;
-  //      headYCheck <= SCREEN_HEIGHT / 2;
-  //      snakeLengthCheck <= 2'b11;
-        
-        
-        
-        //Check initial direction
-  //      directionCheck = 2'b01;
-        //Check inital head and body positions with positions we have initialized
-        //If positionCheck signal is on, the test passes
- //       positionCheckReg = (headXCheck & headX_tb) && (headYCheck & headY_tb);
         #50;             
         
         
@@ -128,19 +104,6 @@ module snake_logic_tb();
         #50; 
         reset_tb = 0; 
         #50; 
-        
-        
-        
-        
-        //Test food being eaten growing the snake
-        
-        
-        
-        
-        
-        
-        
-    
     end
    
 
