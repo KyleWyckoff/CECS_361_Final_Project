@@ -34,7 +34,7 @@ module top(
     output wire [7:0] score
     );
     
-    parameter MAX_SIZE = 10;
+    parameter MAX_SIZE = 50;
     
     // VGA Connections
     wire [9:0] x, y;
@@ -47,7 +47,7 @@ module top(
     wire [9:0] food_x, food_y;
     
     wire clk_10Hz;
-    slow_clock #(10000000) (
+    slow_clock #(5000000) (
         .clk_in(clk),
         .clk_out(clk_10Hz)
         );
@@ -86,7 +86,7 @@ module top(
     
     // Snake logic
     wire [9:0] head_x, head_y;
-    wire [99:0] body_x, body_y;
+    wire [499:0] body_x, body_y;
     wire [6:0] snake_length;
     snake_logic snake (
         .clk(clk_10Hz),
