@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: California State Univerity, Long Beach 
+// Engineer: Bronson Garel
 // 
-// Create Date: 12/06/2024 07:03:05 PM
+// Create Date: 12/09/2024 04:22:41 PM
 // Design Name: 
 // Module Name: food_renderer
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
 // Description: 
 // 
 // Dependencies: 
@@ -21,16 +21,16 @@
 
 
 module food_renderer(
-    input [9:0] pixel_x,
-    input [9:0] pixel_y,
+    input [9:0] x,
+    input [9:0] y,
     input [9:0] food_x,
     input [9:0] food_y,
     output reg food_on
     );
     
     always @(*) begin
-        food_on = (pixel_x >= food_x && pixel_x < food_x + 10 &&
-                   pixel_y >= food_y && pixel_y < food_y + 10);
+        food_on = (x >= food_x && x < food_x + 10 &&
+                   y >= food_y && y < food_y + 10);
     end
     
 endmodule
