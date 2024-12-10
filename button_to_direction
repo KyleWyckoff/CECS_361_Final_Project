@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: California State Univerity, Long Beach 
+// Engineer: Bronson Garel
 // 
-// Create Date: 12/05/2024 09:13:19 PM
+// Create Date: 12/09/2024 04:22:41 PM
 // Design Name: 
 // Module Name: button_to_direction
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
 // Description: 
 // 
 // Dependencies: 
@@ -54,4 +54,3 @@ module button_to_direction (
     end
 
 endmodule
-
