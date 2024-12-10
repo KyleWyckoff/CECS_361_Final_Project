@@ -1,21 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Engineer: Kyle Wyckoff
 // 
-// Create Date: 12/09/2024 02:39:57 PM
-// Design Name: 
+// Create Date: 12/06/2024 02:39:57 PM
 // Module Name: slow_clock_tb
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
+// Project Name: snake_game
+// Target Devices: Nexys A7-100T FPGA Board
+// Tool Versions: Vivado 2023.2
+// Description: test bench using four different div parameterrs to trst differrent 
+//              values given to slow_clock.
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -33,8 +26,8 @@ module slow_clock_tb();
     
     parameter DIV1 = 2;
     parameter DIV2 = 4;
-    parameter DIV3 = 6;
-    parameter DIV4 = 8;
+    parameter DIV3 = 8;
+    parameter DIV4 = 16;
 
     
     //copy the call inside of the top design source
@@ -60,22 +53,22 @@ module slow_clock_tb();
      // Clock Generation
     initial begin
         clk1_tb = 0;
-        forever #5 clk1_tb = ~clk1_tb; // 100MHz clock, period = 10ns
+        forever #5 clk1_tb = ~clk1_tb; 
     end
     
     initial begin
         clk2_tb = 0;
-        forever #5 clk2_tb = ~clk2_tb; // 100MHz clock, period = 10ns
+        forever #5 clk2_tb = ~clk2_tb; 
     end
     
      initial begin
         clk3_tb = 0;
-        forever #5 clk3_tb = ~clk3_tb; // 100MHz clock, period = 10ns
+        forever #5 clk3_tb = ~clk3_tb; 
     end
     
      initial begin
         clk4_tb = 0;
-        forever #5 clk4_tb = ~clk4_tb; // 100MHz clock, period = 10ns
+        forever #5 clk4_tb = ~clk4_tb; 
     end
     
     initial begin
