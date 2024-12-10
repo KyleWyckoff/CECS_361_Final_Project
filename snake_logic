@@ -29,18 +29,18 @@ module snake_logic (
     output reg [9:0] head_x,
     output reg [9:0] head_y,
     output reg [6:0] snake_length,
-    output wire [99:0] body_x,
-    output wire [99:0] body_y,
+    output wire [499:0] body_x,
+    output wire [499:0] body_y,
     output reg [7:0] score
 );
     
     parameter SCREEN_WIDTH = 640;
     parameter SCREEN_HEIGHT = 480;
     parameter SNAKE_STEP = 10;
-    parameter MAX_SIZE = 10;
+    parameter MAX_SIZE = 50;
     
-    reg [9:0] body_x_a [9:0];
-    reg [9:0] body_y_a [9:0];
+    reg [9:0] body_x_a [49:0];
+    reg [9:0] body_y_a [49:0];
     
     integer i;
     
@@ -50,18 +50,17 @@ module snake_logic (
             head_x <= SCREEN_WIDTH / 2;
             head_y <= SCREEN_HEIGHT / 2;
             score <= 0;
-            for (i = 0; i < 10; i = i+1) begin
+            for (i = 0; i < MAX_SIZE; i = i+1) begin
                 body_x_a[i] <= 0;
                 body_y_a[i] <= 0;
             end
         end else begin
         if (~game_over) begin
             // Shift body positions
-            for (i = 10; i > 0; i = i-1) begin
+            for (i = 50; i > 0; i = i-1) begin
                 body_x_a[i] <= body_x_a[i-1];
                 body_y_a[i] <= body_y_a[i-1];
             end
-            
             // Update head position
             body_x_a[0] <= head_x;
             body_y_a[0] <= head_y;
@@ -84,7 +83,7 @@ module snake_logic (
     
     genvar j;
     generate
-        for (j = 0; j < 10; j = j + 1) begin : flatten_snake
+        for (j = 0; j < MAX_SIZE; j = j + 1) begin : flatten_snake
             assign body_x[10*j +: 10] = body_x_a[j];
             assign body_y[10*j +: 10] = body_y_a[j];
         end
