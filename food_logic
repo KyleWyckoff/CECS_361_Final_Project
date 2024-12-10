@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: California State Univerity, Long Beach 
+// Engineer: Bronson Garel
 // 
-// Create Date: 12/06/2024 07:03:05 PM
+// Create Date: 12/09/2024 04:22:41 PM
 // Design Name: 
 // Module Name: food_logic
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
+// Project Name: Snake Game
+// Target Devices: Nexys A7-100T
+// Tool Versions: Vivado 2024.1
 // Description: 
 // 
 // Dependencies: 
@@ -49,25 +49,22 @@ module food_logic(
                 food_needs_update <= 1'b0;
                 food_eaten <= 1'b0;
             end else begin
-            if (~game_over) begin
-                food_eaten <= (head_x == food_x && head_y == food_y);
-                
-                if (food_eaten && !food_needs_update) begin 
-                    random_seed <= {random_seed[14:0], feedback};
-                    food_x <= ((random_seed % (SCREEN_WIDTH / SNAKE_STEP)) * SNAKE_STEP) % SCREEN_WIDTH;
-                    food_y <= ((random_seed / (SCREEN_WIDTH / SNAKE_STEP)) % (SCREEN_HEIGHT / SNAKE_STEP)) * SNAKE_STEP;
+                if (~game_over) begin
+                    food_eaten <= (head_x == food_x && head_y == food_y);
                     
-                    if (food_x >= SCREEN_WIDTH || food_x <= 0 || food_y >= SCREEN_HEIGHT || food_y <= 0) begin
-                        food_x <= food_x/2;
-                        food_y <= food_y/2;
+                    if (food_eaten && !food_needs_update) begin 
+                        random_seed <= {random_seed[14:0], feedback};
+                        food_x <= ((random_seed % (SCREEN_WIDTH / SNAKE_STEP)) * SNAKE_STEP) % SCREEN_WIDTH;
+                        food_y <= ((random_seed / (SCREEN_WIDTH / SNAKE_STEP)) % (SCREEN_HEIGHT / SNAKE_STEP)) * SNAKE_STEP;
+                        
+                        food_needs_update <= 1'b1;
                     end
                     
-                    food_needs_update <= 1'b1;
+                    if (food_y == 0) food_y <= food_y + 40;
+      
+                    if (!food_eaten)
+                        food_needs_update <= 1'b0;
                 end
-                
-                if (!food_eaten)
-                    food_needs_update <= 1'b0;
-            end
             end
         end
 endmodule
