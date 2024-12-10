@@ -24,19 +24,20 @@ module collision_detection(
     input reset,
     input [9:0] head_x,
     input [9:0] head_y,
-    input [99:0] body_x,
-    input [99:0] body_y,
+    input [499:0] body_x,
+    input [499:0] body_y,
     input [6:0] snake_length,
     output reg collision
     );
     
-    wire [9:0] body_x_a [9:0];
-    wire [9:0] body_y_a [9:0];
+    wire [9:0] body_x_a [49:0];
+    wire [9:0] body_y_a [49:0];
+    parameter MAX_SIZE = 50;
     
     // unpack snake
     genvar j;
     generate
-        for (j = 0; j < 10; j = j + 1) begin
+        for (j = 0; j < MAX_SIZE; j = j + 1) begin
             assign body_x_a[j] = body_x[10*j +: 10];
             assign body_y_a[j] = body_y[10*j +: 10];
         end
