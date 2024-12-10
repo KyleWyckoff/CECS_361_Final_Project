@@ -23,10 +23,10 @@
 module food_logic(
     input clk,
     input reset,
+    input game_over,
     input [9:0] head_x,
     input [9:0] head_y,
     output reg food_eaten,
-    output reg score,
     output reg [9:0] food_x,
     output reg [9:0] food_y
     );
@@ -36,30 +36,38 @@ module food_logic(
     parameter SNAKE_STEP = 10;
     
     reg [15:0] random_seed;
-    
     reg food_needs_update;
+    wire feedback;
+    
+    assign feedback = random_seed[15] ^ random_seed[13] ^ random_seed[12] ^ random_seed[10];
     
     always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            random_seed <= 16'hACE1;
-            food_x <= SCREEN_WIDTH/4;
-            food_y <= SCREEN_HEIGHT/4;
-            food_needs_update <= 1'b0;
-            food_eaten <= 1'b0;
-            score <= 0;
-        end else begin
-            food_eaten <= (head_x == food_x && head_y == food_y);
-            score <= score + 1;
-            
-            if (food_eaten && !food_needs_update) begin 
-                random_seed <= {random_seed[14:0], random_seed[15] ^ random_seed[13] ^ random_seed[12] ^ random_seed[10]};
-                food_x <= ((random_seed % (SCREEN_WIDTH / SNAKE_STEP)) * SNAKE_STEP) % SCREEN_WIDTH;
-                food_y <= ((random_seed / (SCREEN_WIDTH / SNAKE_STEP)) % (SCREEN_HEIGHT / SNAKE_STEP)) * SNAKE_STEP;
-                food_needs_update <= 1'b1;
-            end
-            
-            if (!food_eaten)
+            if (reset) begin
+                random_seed <= 16'hACE1;
+                food_x <= SCREEN_WIDTH/4;
+                food_y <= SCREEN_HEIGHT/4;
                 food_needs_update <= 1'b0;
+                food_eaten <= 1'b0;
+            end else begin
+            if (~game_over) begin
+                food_eaten <= (head_x == food_x && head_y == food_y);
+                
+                if (food_eaten && !food_needs_update) begin 
+                    random_seed <= {random_seed[14:0], feedback};
+                    food_x <= ((random_seed % (SCREEN_WIDTH / SNAKE_STEP)) * SNAKE_STEP) % SCREEN_WIDTH;
+                    food_y <= ((random_seed / (SCREEN_WIDTH / SNAKE_STEP)) % (SCREEN_HEIGHT / SNAKE_STEP)) * SNAKE_STEP;
+                    
+                    if (food_x >= SCREEN_WIDTH || food_x <= 0 || food_y >= SCREEN_HEIGHT || food_y <= 0) begin
+                        food_x <= food_x/2;
+                        food_y <= food_y/2;
+                    end
+                    
+                    food_needs_update <= 1'b1;
+                end
+                
+                if (!food_eaten)
+                    food_needs_update <= 1'b0;
+            end
+            end
         end
-    end
 endmodule
