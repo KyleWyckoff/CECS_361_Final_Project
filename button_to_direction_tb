@@ -1,21 +1,14 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Engineer: Kyle Wyckoff
 // 
-// Create Date: 12/08/2024 10:11:30 AM
-// Design Name: 
+// Create Date: 12/04/2024 10:11:30 AM
 // Module Name: button_to_direction_tb
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
+// Project Name: snake_game
+// Target Devices: Nexys A7-100T FPGA Board
+// Tool Versions: Vivado 2023.2
+// Description: This module aims to test the button inputs inside of the dutton_to_direction
+//              design source.  
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -67,11 +60,11 @@ module button_to_direction_tb();
         rightCheck = 0;
         current_direction_tb = 2'b01;
         buttonCheck = (leftCheck | left_tb) | (rightCheck | right_tb) | (upCheck | up_tb) | (downCheck | down_tb);  
-        #500;  // Wait for 100ns
+        #50;  // Wait for 100ns
         
         
         reset_tb = 0;  // De-assert reset
-        #500;
+        #50;
 
         
         //      Test B: Simulate right movement        //
