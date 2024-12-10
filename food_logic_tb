@@ -1,0 +1,68 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 12/09/2024 04:22:41 PM
+// Design Name: 
+// Module Name: food_logic_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module food_logic_tb();
+
+    reg clk_tb, reset_tb, gameOver_tb;
+    reg [9:0] headX_tb, headY_tb;
+    wire foodEaten_tb;
+    wire [9:0] foodX_tb, foodY_tb;
+    
+    food_logic UUT(
+        .clk(clk_tb),
+        .reset(reset_tb),
+        .game_over(gameOver_tb),
+        .head_x(headX_tb),
+        .head_y(headY_tb),
+        .food_eaten(foodEaten_tb),
+        .food_x(foodX_tb),
+        .food_y(foodY_tb)
+    );
+    integer i;
+    
+    
+      // Clock Generation
+    initial begin
+        clk_tb = 0;
+        forever #5 clk_tb = ~clk_tb; // 100MHz clock, period = 10ns
+    end
+    
+    
+    initial begin
+    
+        reset_tb = 1;
+        gameOver_tb = 0;
+        headX_tb = 200;
+        headY_tb = 300; 
+        #50; 
+        reset_tb = 0;
+        //mimic some time that the snake is looking for food
+        #50; 
+        for(i = 0; i < 100; i = i +1) begin 
+            //teleport the snake to the current 
+            headX_tb = foodX_tb;
+            headY_tb = foodY_tb;
+            //run for some time
+            #500;
+        end
+    end
+endmodule
